@@ -1,0 +1,26 @@
+<!DOCTYPE html><html lang="ru"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VK Widget Smoke Test</title>
+<style>
+  body{margin:0;height:100vh;background:#f6f7fb;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;}
+  #vk_community_messages{
+    position:fixed!important;right:18px!important;bottom:18px!important;
+    z-index:2147483647!important;pointer-events:none;
+  }
+  #vk_community_messages iframe{pointer-events:auto;}
+</style>
+</head><body>
+<h1 style="padding:24px;">VK Widget Smoke Test</h1>
+
+<div id="vk_community_messages"></div>
+<script src="https://vk.com/js/api/openapi.js?179"></script>
+<script>
+(function init(){
+  if(!window.VK||!VK.Widgets||!document.getElementById('vk_community_messages')) return setTimeout(init,150);
+  VK.Widgets.CommunityMessages('vk_community_messages', 233167697, {
+    expanded:'0', tooltipButtonText:'Напишите нам', disableExpandChatSound:'1',
+    welcomeScreen:'1', widgetPosition:'right', buttonType:'no_button'
+  });
+})();
+</script>
+</body></html>

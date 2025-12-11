@@ -1,0 +1,701 @@
+<?xml version="1.0" encoding="utf-8"?>
+<panelcategories>
+	<category code="246" sorter="246">
+		<name>КДЛ Дзагурова</name>
+	</category>
+	<category code="208" sorter="208">
+		<name>Профосмотры</name>
+	</category>
+	<category code="207" sorter="207">
+		<name>Диагностические панели</name>
+	</category>
+	<category code="206" sorter="206">
+		<name>Иммуногистохимические исследования</name>
+	</category>
+	<category code="205" sorter="205">
+		<name>Гистологические исследования</name>
+	</category>
+	<category code="202" sorter="202">
+		<name>Цитологические исследования</name>
+		<categories>
+			<category code="226" sorter="226">
+				<name>Иммуноцитохимические исследования</name>
+			</category>
+			<category code="204" sorter="204">
+				<name>Цитологические исследования</name>
+			</category>
+			<category code="203" sorter="203">
+				<name>Жидкостная цитология</name>
+			</category>
+		</categories>
+	</category>
+	<category code="198" sorter="198">
+		<name>Молекулярно-Генетические исследования</name>
+		<categories>
+			<category code="245" sorter="245">
+				<name>Анализы на биологическое родство</name>
+			</category>
+			<category code="201" sorter="201">
+				<name>Генетические исследования полиморфизмов методом ПЦР</name>
+			</category>
+			<category code="200" sorter="200">
+				<name>Генетические исследования полиморфизмов методом пиросеквенирования</name>
+			</category>
+			<category code="199" sorter="199">
+				<name>Цитогенетика и анализ хромосом</name>
+			</category>
+		</categories>
+	</category>
+	<category code="186" sorter="186">
+		<name>ПЦР исследования REAL TIME</name>
+		<categories>
+			<category code="197" sorter="197">
+				<name>HLA-типирование</name>
+			</category>
+			<category code="196" sorter="196">
+				<name>Диагностические профили</name>
+			</category>
+			<category code="195" sorter="195">
+				<name>Выявления РНК/ДНК возбудителей инфекций, передающихся иксодовыми клещами.</name>
+			</category>
+			<category code="194" sorter="194">
+				<name>Диагностика гнойно-септических осложнений</name>
+			</category>
+			<category code="193" sorter="193">
+				<name>Возбудители кишечных инфекций</name>
+			</category>
+			<category code="192" sorter="192">
+				<name>Возбудители респираторных инфекций</name>
+			</category>
+			<category code="191" sorter="191">
+				<name>Вирусные инфекции (кровь)</name>
+			</category>
+			<category code="190" sorter="190">
+				<name>Грибковые инфекции и простейшие</name>
+			</category>
+			<category code="189" sorter="189">
+				<name>Вирусные инфекции (соскобы слизистых)</name>
+			</category>
+			<category code="188" sorter="188">
+				<name>Папилломавирусные инфекции</name>
+			</category>
+			<category code="187" sorter="187">
+				<name>Возбудители инфекций урогенитального тракта</name>
+			</category>
+		</categories>
+	</category>
+	<category code="172" sorter="172">
+		<name>Бактериологические исследования</name>
+		<categories>
+			<category code="185" sorter="185">
+				<name>Санитарно-бактериологические исследования</name>
+			</category>
+			<category code="184" sorter="184">
+				<name>Дополнительные исследования</name>
+			</category>
+			<category code="183" sorter="183">
+				<name>Кал</name>
+			</category>
+			<category code="182" sorter="182">
+				<name>Биоптат желудка</name>
+			</category>
+			<category code="181" sorter="181">
+				<name>Содержимое стерильных полостей</name>
+			</category>
+			<category code="180" sorter="180">
+				<name>Отделяемое, пораженная ткань, транссудат, экссудат, пунктат, выпот, отделяемое ран, инфильтратов, абсцессов, друго.</name>
+			</category>
+			<category code="179" sorter="179">
+				<name>Кровь</name>
+			</category>
+			<category code="178" sorter="178">
+				<name>Грудное молоко</name>
+			</category>
+			<category code="177" sorter="177">
+				<name>Отделяемое нижних дыхательных путей</name>
+			</category>
+			<category code="176" sorter="176">
+				<name>Отделяемое верхних дыхательных путей</name>
+			</category>
+			<category code="175" sorter="175">
+				<name>Отделяемое глаз,ушей</name>
+			</category>
+			<category code="174" sorter="174">
+				<name>Отделяемое мочеполовых органов</name>
+			</category>
+			<category code="173" sorter="173">
+				<name>Моча</name>
+			</category>
+		</categories>
+	</category>
+	<category code="157" sorter="157">
+		<name>Химико-токсикологические исследования</name>
+		<categories>
+			<category code="250" sorter="171">
+				<name>Лекарственный мониторинг противопаркинсонических препаратов</name>
+			</category>
+			<category code="248" sorter="170">
+				<name>Лекарственный мониторинг нейролептиков</name>
+			</category>
+			<category code="251" sorter="168">
+				<name>Лекарственный мониторинг антидепрессантов</name>
+			</category>
+			<category code="171" sorter="251">
+				<name>Токсические вещества (наркотические, психотропные и сильнодействующие)</name>
+			</category>
+			<category code="170" sorter="250">
+				<name>Тяжелые металлы и микроэлементы</name>
+			</category>
+			<category code="165" sorter="248">
+				<name>Лекарственный мониторинг других препаратов</name>
+			</category>
+			<category code="169" sorter="169">
+				<name>Лекарственный мониторинг иммуносупрессантов</name>
+			</category>
+			<category code="168" sorter="167">
+				<name>Лекарственный мониторинг антиаритмиков и сердечных гликозидов</name>
+			</category>
+			<category code="167" sorter="166">
+				<name>Лекарственный мониторинг антиконвульсантов</name>
+			</category>
+			<category code="166" sorter="165">
+				<name>Лекарственный мониторинг антибиотиков</name>
+			</category>
+			<category code="164" sorter="164">
+				<name>Антиоксидантный статус</name>
+			</category>
+			<category code="163" sorter="163">
+				<name>Минерально-витаминные комплексы</name>
+			</category>
+			<category code="162" sorter="162">
+				<name>Гормональные исследования</name>
+				<categories>
+					<category code="233" sorter="233">
+						<name>Стероидные гормоны и их метаболиты</name>
+					</category>
+				</categories>
+			</category>
+			<category code="161" sorter="161">
+				<name>Стероидный профиль мочи</name>
+			</category>
+			<category code="160" sorter="160">
+				<name>Стероидный профиль крови</name>
+			</category>
+			<category code="159" sorter="159">
+				<name>Катехоламины</name>
+			</category>
+			<category code="158" sorter="158">
+				<name>Аминокислоты, органические и жирные кислоты</name>
+			</category>
+		</categories>
+	</category>
+	<category code="120" sorter="120">
+		<name>Аллергологические исследования</name>
+		<categories>
+			<category code="132" sorter="132">
+				<name>Индивидуальные аллергены (IgE, IgG, ImmunoCAP, аллергокомпоненты)</name>
+				<categories>
+					<category code="156" sorter="156">
+						<name>Аллергокомпоненты</name>
+					</category>
+					<category code="155" sorter="155">
+						<name>Разное</name>
+					</category>
+					<category code="154" sorter="154">
+						<name>Клещи</name>
+					</category>
+					<category code="153" sorter="153">
+						<name>Паразиты</name>
+					</category>
+					<category code="152" sorter="152">
+						<name>Лекарственные препараты</name>
+					</category>
+					<category code="151" sorter="151">
+						<name>Профессиональные аллергены</name>
+					</category>
+					<category code="150" sorter="150">
+						<name>Микроорганизмы</name>
+					</category>
+					<category code="149" sorter="149">
+						<name>Домашняя пыль</name>
+					</category>
+					<category code="148" sorter="148">
+						<name>Пыльца деревьев</name>
+					</category>
+					<category code="147" sorter="147">
+						<name>Пыльца сорных трав</name>
+					</category>
+					<category code="146" sorter="146">
+						<name>Пыльца злаковых трав</name>
+					</category>
+					<category code="145" sorter="145">
+						<name>Насекомые и яды</name>
+					</category>
+					<category code="144" sorter="144">
+						<name>Животные аллергены</name>
+					</category>
+					<category code="143" sorter="143">
+						<name>Пищевые аллергены - разное</name>
+					</category>
+					<category code="142" sorter="142">
+						<name>Приправы и пряности</name>
+					</category>
+					<category code="141" sorter="141">
+						<name>Фрукты</name>
+					</category>
+					<category code="140" sorter="140">
+						<name>Овощи</name>
+					</category>
+					<category code="139" sorter="139">
+						<name>Орехи</name>
+					</category>
+					<category code="138" sorter="138">
+						<name>Пищевые злаки</name>
+					</category>
+					<category code="137" sorter="137">
+						<name>Чай, кофе, какао</name>
+					</category>
+					<category code="136" sorter="136">
+						<name>Бобовые</name>
+					</category>
+					<category code="135" sorter="135">
+						<name>Рыба, морепродукты</name>
+					</category>
+					<category code="134" sorter="134">
+						<name>Мясо</name>
+					</category>
+					<category code="133" sorter="133">
+						<name>Молочные продукты, яйца</name>
+					</category>
+				</categories>
+			</category>
+			<category code="122" sorter="122">
+				<name>Смеси аллергенов</name>
+				<categories>
+					<category code="131" sorter="131">
+						<name>Профессиональные аллергены</name>
+					</category>
+					<category code="130" sorter="130">
+						<name>Ингаляционные смеси</name>
+					</category>
+					<category code="129" sorter="129">
+						<name>Домашняя пыль</name>
+					</category>
+					<category code="128" sorter="128">
+						<name>Пыльца сорных трав</name>
+					</category>
+					<category code="127" sorter="127">
+						<name>Пыльца злаковых трав</name>
+					</category>
+					<category code="126" sorter="126">
+						<name>Пыльца деревьев</name>
+					</category>
+					<category code="125" sorter="125">
+						<name>Микроорганизмы</name>
+					</category>
+					<category code="124" sorter="124">
+						<name>Животные аллергены</name>
+					</category>
+					<category code="123" sorter="123">
+						<name>Пищевые аллергены</name>
+					</category>
+				</categories>
+			</category>
+			<category code="121" sorter="121">
+				<name>Комплексные панели аллергенов</name>
+			</category>
+		</categories>
+	</category>
+	<category code="118" sorter="118">
+		<name>Диагностика парапротеинемии</name>
+		<categories>
+			<category code="119" sorter="119">
+				<name>Диагностика парапротеинемии</name>
+			</category>
+		</categories>
+	</category>
+	<category code="108" sorter="108">
+		<name>Диагностика аутоиммунных заболеваний</name>
+		<categories>
+			<category code="234" sorter="234">
+				<name>Аутоиммунный энцефалит</name>
+			</category>
+			<category code="117" sorter="117">
+				<name>Заболевания сердца и сосудов</name>
+			</category>
+			<category code="116" sorter="116">
+				<name>Системные аутоиммунные заболевания</name>
+			</category>
+			<category code="115" sorter="115">
+				<name>Системные заболевания соединительной ткани и суставов</name>
+			</category>
+			<category code="114" sorter="114">
+				<name>Заболевания репродуктивной системы</name>
+			</category>
+			<category code="113" sorter="113">
+				<name>Антифосфолипидный синдром</name>
+			</category>
+			<category code="112" sorter="112">
+				<name>Сахарный диабет</name>
+			</category>
+			<category code="111" sorter="111">
+				<name>Заболевания ЖКТ</name>
+			</category>
+			<category code="110" sorter="110">
+				<name>Заболевания печени</name>
+			</category>
+			<category code="109" sorter="109">
+				<name>Заболевания щитовидной железы</name>
+			</category>
+		</categories>
+	</category>
+	<category code="103" sorter="103">
+		<name>Интерфероновый статус</name>
+		<categories>
+			<category code="107" sorter="107">
+				<name>Определение чувствительности к препаратам интерферона</name>
+			</category>
+			<category code="106" sorter="106">
+				<name>Определение чувствительности к иммуномодуляторам интерферона</name>
+			</category>
+			<category code="105" sorter="105">
+				<name>Определение чувствительности к индукторам интерферона</name>
+			</category>
+			<category code="104" sorter="104">
+				<name>Интерфероновый статус</name>
+			</category>
+		</categories>
+	</category>
+	<category code="97" sorter="97">
+		<name>Иммунный статус</name>
+		<categories>
+			<category code="102" sorter="102">
+				<name>Бактерицидная активность крови</name>
+			</category>
+			<category code="101" sorter="101">
+				<name>ЦИК и система комплемента</name>
+			</category>
+			<category code="100" sorter="100">
+				<name>Гуморальный иммунитет</name>
+			</category>
+			<category code="99" sorter="99">
+				<name>Фагоцитоз</name>
+			</category>
+			<category code="98" sorter="98">
+				<name>Клеточный иммунитет</name>
+			</category>
+		</categories>
+	</category>
+	<category code="38" sorter="38">
+		<name>Серологические исследования</name>
+		<categories>
+			<category code="243" sorter="243">
+				<name>Сыпной тиф</name>
+			</category>
+			<category code="240" sorter="240">
+				<name>Малярия</name>
+			</category>
+			<category code="237" sorter="237">
+				<name>Клонорхоз</name>
+			</category>
+			<category code="230" sorter="230">
+				<name>Коронавирусная инфекция SARS-CoV-2</name>
+			</category>
+			<category code="96" sorter="96">
+				<name>Аспергиллез</name>
+			</category>
+			<category code="95" sorter="95">
+				<name>Кандидоз</name>
+			</category>
+			<category code="94" sorter="94">
+				<name>Суммарные антитела к гельминтам</name>
+			</category>
+			<category code="93" sorter="93">
+				<name>Лептоспироз</name>
+			</category>
+			<category code="92" sorter="92">
+				<name>Стронгилоидоз</name>
+			</category>
+			<category code="91" sorter="91">
+				<name>Тениоз</name>
+			</category>
+			<category code="90" sorter="90">
+				<name>Шистосомоз</name>
+			</category>
+			<category code="89" sorter="89">
+				<name>Фасциолез</name>
+			</category>
+			<category code="88" sorter="88">
+				<name>Трихинеллез</name>
+			</category>
+			<category code="87" sorter="87">
+				<name>Токсокароз</name>
+			</category>
+			<category code="86" sorter="86">
+				<name>Описторхоз</name>
+			</category>
+			<category code="85" sorter="85">
+				<name>Эхинококкоз</name>
+			</category>
+			<category code="84" sorter="84">
+				<name>Аскаридоз</name>
+			</category>
+			<category code="83" sorter="83">
+				<name>Лейшманиоз</name>
+			</category>
+			<category code="82" sorter="82">
+				<name>Амебиаз</name>
+			</category>
+			<category code="81" sorter="81">
+				<name>Лямблиоз</name>
+			</category>
+			<category code="80" sorter="80">
+				<name>Столбняк</name>
+			</category>
+			<category code="79" sorter="79">
+				<name>Шигеллез</name>
+			</category>
+			<category code="78" sorter="78">
+				<name>Брюшной тиф</name>
+			</category>
+			<category code="77" sorter="77">
+				<name>Сальмонеллез</name>
+			</category>
+			<category code="76" sorter="76">
+				<name>Псевдотуберкулез</name>
+			</category>
+			<category code="75" sorter="75">
+				<name>Иерсиниоз</name>
+			</category>
+			<category code="74" sorter="74">
+				<name>Хеликобактериоз</name>
+			</category>
+			<category code="73" sorter="73">
+				<name>Бруцеллез</name>
+			</category>
+			<category code="72" sorter="72">
+				<name>Менингококковая инфекция</name>
+			</category>
+			<category code="71" sorter="71">
+				<name>Дифтерия</name>
+			</category>
+			<category code="70" sorter="70">
+				<name>Туберкулез</name>
+			</category>
+			<category code="69" sorter="69">
+				<name>Легионеллез</name>
+			</category>
+			<category code="68" sorter="68">
+				<name>Паракоклюш</name>
+			</category>
+			<category code="67" sorter="67">
+				<name>Коклюш</name>
+			</category>
+			<category code="66" sorter="66">
+				<name>Гарднереллез</name>
+			</category>
+			<category code="65" sorter="65">
+				<name>Трихомониаз</name>
+			</category>
+			<category code="64" sorter="64">
+				<name>Токсоплазмоз</name>
+			</category>
+			<category code="63" sorter="63">
+				<name>Хламидийная инфекция</name>
+			</category>
+			<category code="62" sorter="62">
+				<name>Микоплазменная инфекция</name>
+			</category>
+			<category code="61" sorter="61">
+				<name>Боррелиоз</name>
+			</category>
+			<category code="60" sorter="60">
+				<name>Сифилис</name>
+			</category>
+			<category code="59" sorter="59">
+				<name>Клещевой энцефалит</name>
+			</category>
+			<category code="58" sorter="58">
+				<name>Парвовирус B19</name>
+			</category>
+			<category code="57" sorter="57">
+				<name>Т-лимфотропный вирус</name>
+			</category>
+			<category code="56" sorter="56">
+				<name>Вирус Коксаки</name>
+			</category>
+			<category code="55" sorter="55">
+				<name>Аденовирусная инфекция</name>
+			</category>
+			<category code="54" sorter="54">
+				<name>Респираторно-синцитиальный вирус</name>
+			</category>
+			<category code="53" sorter="53">
+				<name>Вирусный паротит</name>
+			</category>
+			<category code="52" sorter="52">
+				<name>Корь</name>
+			</category>
+			<category code="51" sorter="51">
+				<name>Краснуха</name>
+			</category>
+			<category code="45" sorter="45">
+				<name>Герпесвирусная инфекция</name>
+				<categories>
+					<category code="50" sorter="50">
+						<name>Прочие вирусы герпеса (VI, VIII тип)</name>
+					</category>
+					<category code="49" sorter="49">
+						<name>Цитомегаловирусная инфекция ( V тип)</name>
+					</category>
+					<category code="48" sorter="48">
+						<name>Вирус Эпштейна-Барр ( IV тип)</name>
+					</category>
+					<category code="47" sorter="47">
+						<name>Вирус варицелла-зостер ( III тип)</name>
+					</category>
+					<category code="46" sorter="46">
+						<name>Вирус простого герпеса ( I - II тип)</name>
+					</category>
+				</categories>
+			</category>
+			<category code="44" sorter="44">
+				<name>Гепатит Е</name>
+			</category>
+			<category code="43" sorter="43">
+				<name>Гепатит D</name>
+			</category>
+			<category code="42" sorter="42">
+				<name>Гепатит С</name>
+			</category>
+			<category code="41" sorter="41">
+				<name>Гепатит В</name>
+			</category>
+			<category code="40" sorter="40">
+				<name>Гепатит А</name>
+			</category>
+			<category code="39" sorter="39">
+				<name>ВИЧ-инфекция</name>
+			</category>
+		</categories>
+	</category>
+	<category code="37" sorter="37">
+		<name>Маркеры опухолевого роста</name>
+	</category>
+	<category code="28" sorter="28">
+		<name>Гормональные исследования</name>
+		<categories>
+			<category code="36" sorter="36">
+				<name>Эритропоэз</name>
+			</category>
+			<category code="35" sorter="35">
+				<name>Гормоны жировой ткани</name>
+			</category>
+			<category code="34" sorter="34">
+				<name>Гормоны роста</name>
+			</category>
+			<category code="33" sorter="33">
+				<name>Костный метаболизм</name>
+			</category>
+			<category code="32" sorter="32">
+				<name>Поджелудочная железа, желудок</name>
+			</category>
+			<category code="31" sorter="31">
+				<name>Надпочечники</name>
+			</category>
+			<category code="30" sorter="30">
+				<name>Половые гормоны</name>
+			</category>
+			<category code="29" sorter="29">
+				<name>Щитовидная железа</name>
+			</category>
+		</categories>
+	</category>
+	<category code="27" sorter="27">
+		<name>Биохимические исследования эякулята</name>
+	</category>
+	<category code="24" sorter="24">
+		<name>Биохимические исследования мочи</name>
+		<categories>
+			<category code="26" sorter="26">
+				<name>Суточная моча</name>
+			</category>
+			<category code="25" sorter="25">
+				<name>Разовая моча</name>
+			</category>
+		</categories>
+	</category>
+	<category code="14" sorter="14">
+		<name>Биохимические исследования крови</name>
+		<categories>
+			<category code="23" sorter="23">
+				<name>Витамины</name>
+			</category>
+			<category code="22" sorter="22">
+				<name>Обмен железа</name>
+			</category>
+			<category code="21" sorter="21">
+				<name>Электролиты</name>
+			</category>
+			<category code="20" sorter="20">
+				<name>Ферменты</name>
+			</category>
+			<category code="19" sorter="19">
+				<name>Обмен пигментов</name>
+			</category>
+			<category code="18" sorter="18">
+				<name>Обмен липопротеинов</name>
+			</category>
+			<category code="17" sorter="17">
+				<name>Обмен углеводов</name>
+			</category>
+			<category code="16" sorter="16">
+				<name>Специфические белки</name>
+			</category>
+			<category code="15" sorter="15">
+				<name>Обмен белков</name>
+			</category>
+		</categories>
+	</category>
+	<category code="4" sorter="4">
+		<name>Общеклинические исследования</name>
+		<categories>
+			<category code="13" sorter="13">
+				<name>Исследование синовиальной жидкости</name>
+			</category>
+			<category code="12" sorter="12">
+				<name>Исследование ликвора</name>
+			</category>
+			<category code="11" sorter="11">
+				<name>Исследование мокроты и плевральной жидкости</name>
+			</category>
+			<category code="10" sorter="10">
+				<name>Отделяемое верхних дыхательных путей</name>
+			</category>
+			<category code="9" sorter="9">
+				<name>Исследование на микозы и демодекоз</name>
+			</category>
+			<category code="8" sorter="8">
+				<name>Исследование эякулята</name>
+			</category>
+			<category code="7" sorter="7">
+				<name>Исследование отделяемого мочеполовых органов</name>
+			</category>
+			<category code="6" sorter="6">
+				<name>Исследование кала</name>
+			</category>
+			<category code="5" sorter="5">
+				<name>Исследования мочи</name>
+			</category>
+		</categories>
+	</category>
+	<category code="3" sorter="3">
+		<name>Коагулологические исследования</name>
+	</category>
+	<category code="2" sorter="2">
+		<name>Иммуногематологические исследования</name>
+	</category>
+	<category code="1" sorter="1">
+		<name>Гематологические исследования</name>
+	</category>
+</panelcategories>

@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<containertypes>
+	<containertype code="1" color="#FFE5B8">Вакутейнер Биохимия</containertype>
+	<containertype code="2" color="#DDA6CB">Вакутейнер для группы крови</containertype>
+	<containertype code="3" color="#FFE5B8">Вакутейнер ОЖСС</containertype>
+	<containertype code="4" color="">Вакутейнер э/ф</containertype>
+	<containertype code="5" color="#FFE5B8">Вакутейнер-Immulite</containertype>
+	<containertype code="6" color="">Вакутейнер-ГГ</containertype>
+	<containertype code="7" color="#8DD8F8">Голубая</containertype>
+	<containertype code="8" color="#FFE5B8">Гомоцистеин</containertype>
+	<containertype code="9" color="#FFE5B8">Желтая</containertype>
+	<containertype code="10" color="#C6E7DF">Зеленая</containertype>
+	<containertype code="11" color="">Контейнер для сбора кала</containertype>
+	<containertype code="12" color="">Предметное стекло</containertype>
+	<containertype code="13" color="">Пробирка с черной крышкой(СОЭ)</containertype>
+	<containertype code="14" color="#969696">Серая</containertype>
+	<containertype code="15" color="">СК30</containertype>
+	<containertype code="16" color="">СКК</containertype>
+	<containertype code="17" color="">СП 5-10</containertype>
+	<containertype code="18" color="">СП Керри-Блэр</containertype>
+	<containertype code="19" color="">Стерильный контейнер</containertype>
+	<containertype code="20" color="">ТСТС</containertype>
+	<containertype code="21" color="">ТСТЭ</containertype>
+	<containertype code="22" color="">ТСТЭ2</containertype>
+	<containertype code="23" color="#DDA6CB">Фиолетовая</containertype>
+	<containertype code="24" color="">Флакон д/в аэроб./анаэроб. ЖК</containertype>
+	<containertype code="25" color="">Флакон д/выд. анаэробов ОК</containertype>
+	<containertype code="26" color="">Флакон д/выд. аэробов ЗК</containertype>
+	<containertype code="27" color="">ФТС</containertype>
+	<containertype code="28" color="">ЧПС</containertype>
+	<containertype code="29" color="">Эппендорф</containertype>
+	<containertype code="30" color="">Контейнер с биоматериалом</containertype>
+	<containertype code="31" color="">Пробирка с зеленой крышкой</containertype>
+	<containertype code="32" color="">СТЕКЛО</containertype>
+	<containertype code="33" color="#DDA6CB">Фиолетовая ЭДТА</containertype>
+	<containertype code="34" color="">Эппендорф1</containertype>
+	<containertype code="35" color="">Эппендорф2</containertype>
+	<containertype code="37" color="">Контейнер</containertype>
+	<containertype code="38" color="">Тупфер без среды</containertype>
+	<containertype code="39" color="">Флакон SurePath</containertype>
+	<containertype code="40" color="">Флакон с формалином</containertype>
+	<containertype code="41" color="">Микровета</containertype>
+	<containertype code="42" color="">Фиолетовая ПЦР и ГИ</containertype>
+	<containertype code="43" color="">ПЦР</containertype>
+	<containertype code="44" color="">Угольная среда</containertype>
+	<containertype code="45" color="">Среда Mycoplasma DUO</containertype>
+	<containertype code="46" color="">Флакон BacT ALERT</containertype>
+	<containertype code="47" color="">Чашка Петри с КУА</containertype>
+	<containertype code="48" color="">Дополнительно</containertype>
+	<containertype code="49" color="">Фиолетовая ПФ</containertype>
+	<containertype code="50" color="">Желтая с нагрузкой</containertype>
+	<containertype code="51" color="">Цитология</containertype>
+	<containertype code="52" color="">Моча</containertype>
+	<containertype code="53" color="">Мазок на стекле</containertype>
+	<containertype code="54" color="">Прочее</containertype>
+	<containertype code="55" color="">Кал ПФ</containertype>
+	<containertype code="56" color="">Энтеробиоз ПФ</containertype>
+	<containertype code="57" color="">Кишечная группа (70.500)</containertype>
+	<containertype code="58" color="">Посев на стафилококк (70.505)</containertype>
+	<containertype code="59" color="">Прочее ПЦР</containertype>
+	<containertype code="60" color="">Моча (посев)</containertype>
+	<containertype code="61" color="">Сан.-бак. исследования</containertype>
+	<containertype code="64" color="">Кал (посев)</containertype>
+	<containertype code="65" color="">КАЛ</containertype>
+	<containertype code="66" color="">ЭНТЕРОБИОЗ</containertype>
+	<containertype code="67" color="">Мокрота</containertype>
+	<containertype code="68" color="">МОЧА по Зимницкому</containertype>
+	<containertype code="69" color="">Гистология</containertype>
+	<containertype code="70" color="">Эякулят</containertype>
+	<containertype code="72" color="">КРОВЬ С НАГРУЗКОЙ 60</containertype>
+	<containertype code="73" color="">Голубая 2</containertype>
+	<containertype code="74" color="">Голубая 3</containertype>
+	<containertype code="75" color="">Голубая 4</containertype>
+	<containertype code="76" color="#F0808">Розовая</containertype>
+	<containertype code="77" color="#F0808">Серая 120 с нагрузкой</containertype>
+	<containertype code="78" color="#F0808">Розовая с нагрузкой</containertype>
+	<containertype code="79" color="#F0808">Гистология 2</containertype>
+	<containertype code="81" color="#F0808">Гистология 3</containertype>
+	<containertype code="82" color="#F0808">Гистология 4</containertype>
+	<containertype code="83" color="#F0808">Желтая с нагрузкой 60</containertype>
+	<containertype code="84" color="#F0808">Серая 60 с нагрузкой</containertype>
+	<containertype code="85" color="#F0808">Желтая доп.</containertype>
+	<containertype code="86" color="#F0808">Стерильная пробирка</containertype>
+	<containertype code="88" color="#F0808">Гистология 5</containertype>
+	<containertype code="89" color="#F0808">Гистология 6</containertype>
+	<containertype code="90" color="#F0808">Гистология 7</containertype>
+	<containertype code="91" color="#F0808">Гистология 8</containertype>
+	<containertype code="92" color="#F0808">Гистология 9</containertype>
+	<containertype code="93" color="#F0808">Гистология 10</containertype>
+	<containertype code="94" color="#F0808">Гистология 11</containertype>
+	<containertype code="95" color="#F0808">Гистология 12</containertype>
+	<containertype code="96" color="#F0808">Зонд-тампон тонкий</containertype>
+	<containertype code="97" color="#F0808">Зонд-тампон толстый</containertype>
+	<containertype code="98" color="#F0808">Микропробирка (сиреневая крышка)</containertype>
+	<containertype code="99" color="#F0808">Пробирка для мочи</containertype>
+	<containertype code="100" color="#F0808">Фиолетовая доп.</containertype>
+	<containertype code="101" color="#F0808">Фиолетовая М</containertype>
+	<containertype code="102" color="#F0808">Фиолетовая Ж</containertype>
+	<containertype code="103" color="#F0808">Пробирка для мочи с консервантом</containertype>
+	<containertype code="105" color="#F0808">Фиолетовая гр.кр.</containertype>
+	<containertype code="106" color="#F0808">Микропробирка для глюкозы (серая крышка)</containertype>
+	<containertype code="108" color="#F0808">Зеленая доп</containertype>
+	<containertype code="109" color="#F0808">Фиолетовая ПЦР и ГИ доп.</containertype>
+	<containertype code="110" color="#F0808">Контейнер для слюны </containertype>
+	<containertype code="111" color="#F0808">тест-набор «ХЕЛИКАРБ»</containertype>
+	<containertype code="112" color="#F0808">Пробирка с борной кислотой</containertype>
+	<containertype code="113" color="#F0808">Заключение</containertype>
+	<containertype code="114" color="#F0808">76</containertype>
+	<containertype code="115" color="#F0808">Чашка Петри с 18-24 часовой культурой микроорганизмов</containertype>
+	<containertype code="116" color="#F0808">Лимонная</containertype>
+	<containertype code="117" color="#F0808">тест-набор "СИБРТЕСТ"</containertype>
+	<containertype code="118" color="#F0808">Предметное стекло1</containertype>
+	<containertype code="119" color="#F0808">Комплект "Prenetix"</containertype>
+	<containertype code="120" color="#F0808">Флакон с транспортной средой на уреаплазмы-микоплазмы</containertype>
+	<containertype code="121" color="#F0808">Фиолетовая ВЭЖХ</containertype>
+	<containertype code="122" color="#F0808">Фиолетовая Омега</containertype>
+	<containertype code="123" color="#F0808">Желтая доп.2</containertype>
+	<containertype code="125" color="#F0808">Желтая доп.3</containertype>
+	<containertype code="126" color="#F0808">Желтая доп.4</containertype>
+	<containertype code="127" color="#F0808">Фиолетовая АК</containertype>
+	<containertype code="10113" color="#F0808">Желтая БХ</containertype>
+	<containertype code="10114" color="#F0808">Желтая ГР</containertype>
+	<containertype code="10115" color="#F0808">Желтая ИФА</containertype>
+	<containertype code="10117" color="#F0808">Эппендорф-</containertype>
+	<containertype code="10118" color="#F0808">Желтая АУТ</containertype>
+	<containertype code="10119" color="#F0808">Желтая РПГА</containertype>
+</containertypes>

@@ -1,0 +1,452 @@
+{% extends 'dzagurov/base.html' %}
+{% load static %}
+
+{% block description %}Страница анализов{% endblock %}
+{% block title %}Анализы{% endblock %}
+
+{% block content %}
+
+  <!-- Hero -->
+  <section class="ftco-intro img" style="background-image: url({% static 'images/contacts.webp' %});">
+        <!-- Content -->
+    <div class="container h-100 d-flex flex-column justify-content-center">
+      <div class="row justify-content-center">
+        <div class="col-12 col-sm-10 col-md-8 col-lg-7 col-xl-6">
+          <!-- Centered mini-UI card -->
+          <div class="hero-card shadow-lg">
+            <h2 class="h4 mb-1 text-center">Анализы</h2>
+            <p class="text-center text-muted mb-3">Каталог анализов и быстрая запись</p>
+
+            <form method="get" action="" class="hero-form">
+              <!-- Поиск -->
+              <div class="form-group mb-2">
+                <label for="p_q" class="sr-only">Поиск по названию или коду</label>
+                <div class="input-group">
+                  <div class="input-group-prepend">
+                    <span class="input-group-text"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i></span>
+                  </div>
+                  <input type="text"
+                         class="form-control"
+                         id="p_q"
+                         name="p_q"
+                         value="{{ request.GET.p_q|default:'' }}"
+                         placeholder="Поиск по названию, коду или аналиту…">
+                </div>
+              </div>
+
+              <!-- Категория + Найти -->
+              <div class="form-row">
+                <div class="form-group col-12 col-sm-7 mb-2">
+                  <label for="p_cat" class="sr-only">Категория</label>
+                  <select class="form-control" id="p_cat" name="p_cat">
+                    <option value="">Все категории</option>
+                    {% if panel_categories %}
+                      {% for cat in panel_categories %}
+                        <option value="{{ cat.code }}" {% if request.GET.p_cat == cat.code %}selected{% endif %}>
+                          {{ cat.name }}
+                        </option>
+                      {% endfor %}
+                    {% endif %}
+                  </select>
+                </div>
+                <div class="form-group col-12 col-sm-5 mb-2">
+                  <button type="submit" class="btn btn-primary btn-block">
+                    Найти
+                  </button>
+                </div>
+              </div>
+
+              <!-- Расширенный блок: филиал + дата/время -->
+              <div class="card mb-2 border-0">
+                <div class="card-body p-2">
+                  <div class="form-row">
+                    <div class="form-group col-12 mb-2">
+                      <label for="contact" class="small mb-1">Филиал</label>
+                      <select class="form-control" id="contact" name="contact">
+                        <option value="">Любой</option>
+                        {% if hero_contacts %}
+                          {% for c in hero_contacts %}
+                            <option value="{{ c.id }}"
+                                    {% if request.GET.contact|default:'' == c.id|stringformat:'s' %}selected{% endif %}>
+                              {{ c.name }}{% if c.address %} — {{ c.address }}{% endif %}
+                            </option>
+                          {% endfor %}
+                        {% endif %}
+                      </select>
+                    </div>
+
+                    <div class="form-group col-6 mb-2">
+                      <label for="visit_date" class="small mb-1">Дата</label>
+                      <input type="date"
+                             class="form-control"
+                             id="visit_date"
+                             name="visit_date"
+                             value="{{ request.GET.visit_date|default:'' }}">
+                    </div>
+
+                    <div class="form-group col-6 mb-2">
+                      <label for="visit_time" class="small mb-1">Время</label>
+                      <input type="time"
+                             class="form-control"
+                             id="visit_time"
+                             name="visit_time"
+                             step="900"
+                             value="{{ request.GET.visit_time|default:'' }}">
+                    </div>
+                  </div>
+
+                  <div class="d-flex align-items-center justify-content-center">
+                    <button type="submit" class="btn btn-outline-primary btn-sm mr-2" name="action" value="slots">
+                      Показать свободные окна
+                    </button>
+                    <a href="#" class="btn btn-outline-light btn-sm">Записаться на приём</a>
+                  </div>
+                </div>
+              </div>
+
+              <div class="d-flex align-items-center justify-content-center">
+                {% if request.GET.p_q or request.GET.p_cat or request.GET.contact or request.GET.visit_date or request.GET.visit_time %}
+                  <a href="?" class="btn btn-outline-secondary btn-sm">Сбросить</a>
+                {% endif %}
+              </div>
+            </form>
+          </div>
+      {% if messages %}
+        <div class="hero-messages">
+          {% for message in messages %}
+            <div class="alert alert-{{ message.tags|default:'info' }} alert-hero" role="alert">
+              {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Django messages -->
+  {% if messages %}
+    <div class="container mt-3">
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags|default:'info' }} mb-3" role="alert">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <section class="py-5 bg-light border-top">
+    <div class="container">
+      <div class="row g-4">
+
+        <!-- Левая колонка: фильтры / категории -->
+        <aside class="col-12 col-lg-3">
+          <div class="card border-0 shadow-sm sticky-top lab-filters" style="top: 1rem;">
+            <div class="card-body p-3" data-hover-scroll>
+              <!-- Заголовок фильтра -->
+              <div class="d-flex align-items-center justify-content-between mb-2">
+                <div class="h6 mb-0 d-flex align-items-center">
+                  <i class="fa-solid fa-filter mr-2 text-primary"></i> Фильтры
+                </div>
+                {% if panel_found_total is not None %}
+                  <span class="badge badge-light border text-muted">найдено: {{ panel_found_total }}</span>
+                {% endif %}
+              </div>
+
+              <!-- Поиск -->
+              <form method="get" class="mb-3">
+                <div class="input-group">
+                  <div class="input-group-prepend">
+                    <span class="input-group-text bg-white"><i class="fa-solid fa-magnifying-glass"></i></span>
+                  </div>
+                  <input
+                    type="search"
+                    class="form-control"
+                    name="p_q"
+                    placeholder="Поиск по коду или названию…"
+                    value="{{ p_q|default_if_none:'' }}"
+                  >
+                  {% if p_cat %}
+                    {# BUGFIX: должно быть p_cat, а не p_q #}
+                    <input type="hidden" name="p_cat" value="{{ p_cat|default_if_none:'' }}">
+                  {% endif %}
+                </div>
+
+                <div class="d-flex align-items-center mt-2">
+                  <button class="btn btn-primary btn-sm mr-2" type="submit">Найти</button>
+                  {% if p_q or p_cat %}
+                    <a href="?" class="btn btn-outline-secondary btn-sm">Сбросить</a>
+                  {% endif %}
+                </div>
+              </form>
+
+              <!-- Активные фильтры (чипсы) -->
+              {% if p_q or selected_category %}
+                <div class="active-filters mb-3 d-flex flex-wrap">
+                  {% if selected_category %}
+                    <span class="badge badge-primary mr-1 mb-1 d-inline-flex align-items-center">
+                      <i class="fa-regular fa-folder-open mr-1" aria-hidden="true"></i>
+                      <span class="chip-text text-truncate">{{ selected_category.name }}</span>
+                    </span>
+                  {% elif p_cat %}
+                    <span class="badge badge-primary mr-1 mb-1 d-inline-flex align-items-center">
+                      <i class="fa-regular fa-folder-open mr-1" aria-hidden="true"></i>
+                      <span class="chip-text text-truncate">{{ p_cat_name|default:p_cat }}</span>
+                    </span>
+                  {% endif %}
+                  {% if p_q %}
+                    <span class="badge badge-info mr-1 mb-1 d-inline-flex align-items-center">
+                      <i class="fa-regular fa-circle-question mr-1" aria-hidden="true"></i>
+                      <span class="chip-text text-truncate">{{ p_q }}</span>
+                    </span>
+                  {% endif %}
+                </div>
+              {% endif %}
+
+              <!-- Категории -->
+              <div class="list-group list-group-flush lab-cat-list">
+                <a
+                  href="?{% if p_q %}p_q={{ p_q|urlencode }}{% endif %}"
+                  class="list-group-item list-group-item-action d-flex align-items-center justify-content-between {% if not p_cat %}active{% endif %}"
+                >
+                  <span class="d-flex align-items-center">
+                    <i class="fa-solid fa-layer-group mr-2"></i> Все панели
+                  </span>
+                  {% if panel_found_total is not None %}
+                    <span class="badge badge-light border">{{ panel_found_total }}</span>
+                  {% endif %}
+                </a>
+
+                {% for c in panel_categories %}
+                  {% if p_q %}
+                    {% with url_q='?p_q='|add:p_q|add:'&p_cat='|add:c.code %}
+                      <a
+                        href="{{ url_q }}"
+                        class="list-group-item list-group-item-action d-flex align-items-center justify-content-between {% if c.active %}active{% endif %}"
+                      >
+                        <span class="d-flex align-items-center text-truncate">
+                          <i class="fa-regular fa-folder mr-2"></i>
+                          <span class="text-truncate">{{ c.name }}</span>
+                        </span>
+                        <span class="badge badge-light border">{{ c.total }}</span>
+                      </a>
+                    {% endwith %}
+                  {% else %}
+                    <a
+                      href="?p_cat={{ c.code }}"
+                      class="list-group-item list-group-item-action d-flex align-items-center justify-content-between {% if c.active %}active{% endif %}"
+                    >
+                      <span class="d-flex align-items-center text-truncate">
+                        <i class="fa-regular fa-folder mr-2"></i>
+                        <span class="text-truncate">{{ c.name }}</span>
+                      </span>
+                      <span class="badge badge-light border">{{ c.total }}</span>
+                    </a>
+                  {% endif %}
+                {% empty %}
+                  <div class="text-muted small px-3 py-2">Категорий нет</div>
+                {% endfor %}
+              </div>
+
+              {% if panel_catalog_url %}
+                <a href="{{ panel_catalog_url }}" class="btn btn-link mt-3 p-0">
+                  Полный каталог <i class="fa-solid fa-arrow-right ml-1"></i>
+                </a>
+              {% endif %}
+            </div>
+          </div>
+        </aside>
+
+        <!-- Правая колонка: список панелей (без внутренних ограничений по высоте) -->
+        <main class="col-12 col-lg-9">
+          {# ВНИМАНИЕ: убрал data-hover-scroll и любые max-height/overflow — колонка тянется по контенту #}
+          {% if panel_list %}
+            <div class="d-flex align-items-center justify-content-between mb-3">
+              <h2 class="h5 mb-0">
+                {% if selected_category %}Категория: {{ selected_category.name }}
+                {% elif p_cat %}Категория: {{ p_cat_name|default:p_cat }}
+                {% else %}Панели анализов{% endif %}
+                {% if p_q %}<span class="text-muted small ms-2">поиск: “{{ p_q }}”</span>{% endif %}
+              </h2>
+              <div class="text-muted small">
+                найдено: {{ panel_found_total }}{% if panel_found_total > panel_limit %} · показано первые {{ panel_limit }}{% endif %}
+              </div>
+            </div>
+
+            {% if request.GET.view == 'grid' %}
+              <div class="row">
+                {% for panel in panel_list %}
+                  <div class="col-12 col-md-6 mb-3 ftco-animate">
+                    {% include "includes/panel_card.html" with panel=panel layout="grid" %}
+                  </div>
+                {% endfor %}
+              </div>
+            {% else %}
+              <div class="vstack gap-3">
+                {% for panel in panel_list %}
+                  <div class="ftco-animate">
+                    {% include "includes/panel_card.html" with panel=panel layout="list" %}
+                  </div>
+                {% endfor %}
+              </div>
+            {% endif %}
+          {% else %}
+            <div class="alert alert-info mb-0">Ничего не найдено. Уточните фильтры слева.</div>
+          {% endif %}
+        </main>
+
+      </div>
+    </div>
+  </section>
+
+  <style>
+    /* Левая колонка: фиксация высоты под окно и скролл по ховеру */
+    .lab-filters .card-body {
+      max-height: calc(100vh - 2rem); /* 2rem ~= компенсация для sticky top/отступов */
+      overflow: hidden;               /* скрываем скролл до наведения */
+      overscroll-behavior: contain;   /* не прокидываем скролл в body, пока крутим внутри */
+    }
+    .lab-filters .card-body:hover {
+      overflow-y: auto;
+    }
+
+    /* Sticky поверх контента */
+    @media (min-width: 992px) { .sticky-top { z-index: 1010; } }
+
+    /* Active-стили (оставляю твои) */
+    .list-group-item.active {
+      background-color: var(--bs-primary);
+      border-color: var(--bs-primary);
+    }
+  </style>
+
+  <!-- Перехват wheel ТОЛЬКО для левой колонки -->
+  <script>
+    (function () {
+      function enableHoverScroll(el) {
+        if (!el) return;
+        el.addEventListener('wheel', function (e) {
+          const atTop    = el.scrollTop <= 0;
+          const atBottom = Math.ceil(el.scrollTop + el.clientHeight) >= el.scrollHeight;
+          const goingUp  = e.deltaY < 0;
+          const goingDn  = e.deltaY > 0;
+
+          // крутить внутри, если есть куда; иначе дать событию уйти в body
+          if ((goingUp && !atTop) || (goingDn && !atBottom)) {
+            e.preventDefault();        // нужно passive:false
+            el.scrollTop += e.deltaY;
+          }
+        }, { passive: false });
+      }
+
+      document.addEventListener('DOMContentLoaded', function () {
+        const leftScroll = document.querySelector('.lab-filters .card-body[data-hover-scroll]');
+        enableHoverScroll(leftScroll);
+      });
+    })();
+  </script>
+  
+  
+  <style>
+    /* HERO layout */
+    .hero-analyses { min-height: 52vh; }
+    @media (min-width: 992px) { .hero-analyses { min-height: 64vh; } }
+
+    .hero-analyses .bg-video {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover; object-position: center;
+      z-index: 0;
+    }
+    .hero-analyses .overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(to bottom, rgba(0,0,0,.45), rgba(0,0,0,.35));
+      z-index: 1;
+    }
+
+    /* Messages inside hero */
+    .hero-messages {
+      position: relative; z-index: 2;
+      display: grid; gap: .5rem; margin-bottom: .75rem;
+    }
+    .alert-hero {
+      backdrop-filter: saturate(1.2) blur(2px);
+      background-color: rgba(255,255,255,.92);
+      border: 1px solid rgba(0,0,0,.08);
+      padding: .5rem .75rem; margin: 0;
+    }
+
+    /* Center card */
+    .hero-card {
+      position: relative; z-index: 2;
+      border-radius: 1rem; padding: 1rem;
+      background: rgba(255,255,255,.9);
+      border: 1px solid rgba(0,0,0,.08);
+      backdrop-filter: saturate(1.2) blur(4px);
+    }
+    @media (min-width: 576px) { .hero-card { padding: 1.25rem; } }
+    @media (min-width: 992px) { .hero-card { padding: 1.5rem 1.75rem; } }
+
+    /* Form tweaks */
+    .hero-form .input-group-text { background: #fff; }
+    .hero-form .form-control::placeholder { color: #999; }
+
+    /* Left filter card z-index over sticky header if any */
+    @media (min-width: 992px) { .sticky-top { z-index: 1010; } }
+    .list-group-item.active { background-color: var(--bs-primary); border-color: var(--bs-primary); }
+
+  /* --- Поля ввода и селекты (единый стиль проекта) --- */
+  .hero-form .form-control,
+  .lab-filters .form-control,
+  .lab-filters .input-group-text,
+  .hero-card .form-control,
+  .hero-card .input-group-text {
+      border-radius: 50rem; /* Полукруглые края */
+      border: 1px solid rgba(0,0,0,.15);
+      transition: all .2s ease;
+  }
+
+  .hero-form .form-control:focus,
+  .lab-filters .form-control:focus,
+  .hero-card .form-control:focus {
+      box-shadow: 0 0 0 .2rem rgba(13,110,253,.15);
+      border-color: var(--bs-primary);
+  }
+
+  /* Кнопки в таком же стиле */
+  .hero-form .btn,
+  .lab-filters .btn,
+  .hero-card .btn {
+      border-radius: 50rem;
+      font-weight: 500;
+      transition: all .2s ease;
+  }
+
+  /* Поле поиска с иконкой */
+  .hero-form .input-group-text {
+      background: #fff;
+      color: #777;
+  }
+
+  /* Кнопки outline — мягче */
+  .btn-outline-light {
+      border-color: rgba(255,255,255,.6);
+      color: #fff;
+  }
+
+  .btn-outline-light:hover {
+      background-color: rgba(255,255,255,.9);
+      color: #000;
+  }
+
+  .btn-outline-secondary {
+      border-color: rgba(0,0,0,.25);
+  }
+
+  .btn-outline-secondary:hover {
+      background-color: rgba(0,0,0,.05);
+  }
+</style>
+
+{% endblock %}

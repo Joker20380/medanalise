@@ -1,0 +1,17 @@
+<div id="vk_community_messages"></div>
+<script type="text/javascript">
+  (function() {
+    if (typeof VK === "undefined") {
+      console.warn("VK OpenAPI is not loaded");
+      return;
+    }
+    VK.Widgets.CommunityMessages(
+      "vk_community_messages",
+      {{ VK_GROUP_ID }},
+      {
+        expanded: "0",
+        tooltipButtonText: "Напишите нам",
+      }
+    );
+  })();
+</script>

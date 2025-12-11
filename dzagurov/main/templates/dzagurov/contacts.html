@@ -1,0 +1,382 @@
+{% extends 'dzagurov/base.html' %}
+{% load static %}
+{% load webp %}
+
+{% block description %}Страница контактной информации КДЛ Дзагуров{% endblock %}
+{% block title %}Контакты{% endblock %}
+
+{% block content %}
+
+  <!-- Hero -->
+  <section class="ftco-intro img" style="background-image: url({% static 'images/contacts.webp' %});">
+    <div class="overlay"></div>
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-md-9 text-center">
+          <h2>Контакты</h2>
+          <p>Свяжитесь с нами по всем интересующим Вас вопросам</p>
+          <p class="mb-0">
+            <a href="#" class="btn btn-white px-4 py-3">Записаться на прием</a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Django messages -->
+  {% if messages %}
+    <div class="container mt-3">
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags|default:'info' }} mb-3" role="alert">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <!-- Верх: форма и офисы -->
+  <section class="container my-5">
+    <div class="row g-4">
+
+
+
+      <!-- Офисы -->
+      <div class="col-lg-6">
+        <div class="h-100 d-flex flex-column">
+          <div class="d-flex align-items-center justify-content-between mb-3">
+            <h3 class="mb-0">Наши офисы</h3>
+            <span class="text-muted small">{% if offices %}{{ offices|length }} шт.{% else %}0{% endif %}</span>
+          </div>
+
+          <input id="officeSearch" type="text" class="form-control mb-3" placeholder="Поиск по названию/адресу/телефону…">
+
+          <div id="officeList" class="list-group flex-grow-1" style="max-height: 520px; overflow-y: auto;">
+
+            {% for loc in offices %}
+              <div class="office-item card shadow-sm mb-3"
+                   data-lat="{{ loc.lat|floatformat:'6' }}"
+                   data-lon="{{ loc.lon|floatformat:'6' }}"
+                   data-name="{{ loc.name|escape }}"
+                   data-phones="{% for c in loc.Contact.all %}{% if c.phone %}{{ c.phone }} {% endif %}{% endfor %}"
+                   data-address="{% for c in loc.Contact.all %}{% if c.address %}{{ c.address }} {% endif %}{% endfor %}">
+                <div class="card-body p-3">
+
+                  <div class="d-flex align-items-center justify-content-between mb-2">
+                    <h5 class="fw-semibold text-primary mb-0">{{ loc.name }}</h5>
+                    <button type="button"
+                            class="btn btn-sm btn-outline-secondary js-focus-map"
+                            data-lat="{{ loc.lat|floatformat:'6' }}"
+                            data-lon="{{ loc.lon|floatformat:'6' }}">
+                      Показать на карте
+                    </button>
+                  </div>
+
+                  {% for c in loc.Contact.all %}
+                    {% if c.address %}
+                      <div class="d-flex align-items-start mb-1 text-muted small">
+                        <i class="fa-solid fa-location-dot mr-2 mt-1"></i>
+                        <span>{{ c.address }}</span>
+                      </div>
+                    {% endif %}
+                    {% if c.phone %}
+                      <div class="d-flex align-items-center mb-1 small">
+                        <i class="fa-solid fa-phone mr-2"></i>
+                        <a href="tel:{{ c.phone|urlencode }}" class="text-dark">{{ c.phone }}</a>
+                      </div>
+                    {% endif %}
+                    {% if c.email %}
+                      <div class="d-flex align-items-center mb-1 small">
+                        <i class="fa-regular fa-envelope mr-2"></i>
+                        <a href="mailto:{{ c.email|urlencode }}" class="text-dark">{{ c.email }}</a>
+                      </div>
+                    {% endif %}
+
+                    <div class="mt-1">
+                      {% if c.is_open_now %}
+                        <span class="badge badge-success">Открыто сейчас</span>
+                      {% else %}
+                        <span class="badge badge-secondary">Закрыто</span>
+                      {% endif %}
+                    </div>
+
+                    {% if c.business_hours.all %}
+                      <div class="mt-2">
+                        <button class="btn btn-sm btn-outline-primary js-hours-toggle"
+                                type="button"
+                                data-target="#hours-{{ c.id }}"
+                                aria-expanded="false"
+                                aria-controls="hours-{{ c.id }}">
+                          Часы работы
+                        </button>
+
+                        <div class="collapse mt-2" id="hours-{{ c.id }}">
+                          <div class="table-responsive">
+                            <table class="table table-sm mb-0 align-middle">
+                              <tbody>
+                                {% for bh in c.business_hours.all %}
+                                  <tr class="{% if bh.weekday == today_weekday %}table-warning{% endif %}">
+                                    <td class="text-muted small" style="width: 40%;">
+                                      {% if bh.weekday == 0 %}Понедельник{% elif bh.weekday == 1 %}Вторник
+                                      {% elif bh.weekday == 2 %}Среда{% elif bh.weekday == 3 %}Четверг
+                                      {% elif bh.weekday == 4 %}Пятница{% elif bh.weekday == 5 %}Суббота
+                                      {% else %}Воскресенье{% endif %}
+                                      {% if bh.weekday == today_weekday %}
+                                        <span class="ml-1 badge badge-info text-dark">сегодня</span>
+                                      {% endif %}
+                                    </td>
+                                    <td class="small">
+                                      {% if bh.is_closed %}
+                                        <span class="text-muted">Выходной</span>
+                                      {% elif bh.open_time and bh.close_time %}
+                                        {{ bh.open_time|time:"H:i" }}–{{ bh.close_time|time:"H:i" }}
+                                      {% else %}
+                                        —
+                                      {% endif %}
+                                      {% if bh.note %}
+                                        <span class="text-muted ml-1">({{ bh.note }})</span>
+                                      {% endif %}
+                                    </td>
+                                  </tr>
+                                {% empty %}
+                                  <tr><td class="small text-muted">Расписание не заполнено</td><td></td></tr>
+                                {% endfor %}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      </div>
+                    {% endif %}
+                    {% if not forloop.last %}<hr class="my-2">{% endif %}
+                  {% endfor %}
+                </div>
+              </div>
+            {% empty %}
+              <div class="alert alert-warning m-0">Нет офисов с координатами.</div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+            <!-- Форма -->
+      <div class="col-lg-6">
+        <div class="bg-light p-4 h-100 rounded">
+          <h3 class="mb-3">Напишите нам</h3>
+          <form id="contact_form" method="post" action="{% url 'contacts' %}" class="contact-form" novalidate>
+            {% csrf_token %}
+            <div class="form-group mb-3">
+              <input type="text" class="form-control" name="name" placeholder="Имя" required>
+              <div class="invalid-feedback">Укажите имя</div>
+            </div>
+            <div class="form-group mb-3">
+              <input type="email" class="form-control" name="email" placeholder="Email" required>
+              <div class="invalid-feedback">Укажите корректный email</div>
+            </div>
+            <div class="form-group mb-3">
+              <input type="text" class="form-control" name="phone" placeholder="Телефон">
+            </div>
+            <div class="form-group mb-3">
+              <textarea name="message" rows="6" class="form-control" placeholder="Сообщение" required></textarea>
+              <div class="invalid-feedback">Напишите сообщение</div>
+            </div>
+
+            <div class="form-group mb-4">
+              <select id="contact_form_contact" name="contact" class="form-control">
+                <option value="">Выберите получателя (необязательно)</option>
+                {% if main_contact %}
+                  <option value="{{ main_contact.id }}">Основные контакты ({{ main_contact.name }})</option>
+                {% endif %}
+                {% for group in contact_groups %}
+                  {% for contact in group.contacts.all %}
+                    <option value="{{ contact.id }}">{{ group.name }}: {{ contact.name }}</option>
+                  {% endfor %}
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="form-group">
+              <input type="submit" value="Отправить сообщение" class="btn btn-secondary py-3 px-5">
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Карта -->
+  <section class="container-fluid px-0 mb-5">
+    <div id="geomapContainer" class="w-100" style="height: 800px;">
+      {% include "geomap/common.html" %}
+    </div>
+  </section>
+
+  <!-- JS -->
+  <script>
+  // Валидация формы
+  (function() {
+    var form = document.getElementById('contact_form');
+    if (!form) return;
+    form.addEventListener('submit', function(e) {
+      if (!form.checkValidity()) {
+        e.preventDefault();
+        e.stopPropagation();
+        alert('Пожалуйста, заполните все обязательные поля корректно.');
+      }
+      form.classList.add('was-validated');
+    });
+  })();
+
+  // Поиск по офисам
+  (function() {
+    var input = document.getElementById('officeSearch');
+    var list = document.getElementById('officeList');
+    if (!input || !list) return;
+    var items = Array.prototype.slice.call(list.querySelectorAll('.office-item'));
+    var norm = function(s){ return (s||'').toLowerCase().replace(/\s+/g,' ').trim(); };
+    var tid = null;
+    input.addEventListener('input', function() {
+      clearTimeout(tid);
+      var self = this;
+      tid = setTimeout(function(){
+        var q = norm(self.value);
+        items.forEach(function(el){
+          var hay = norm((el.dataset.name||'') + ' ' + (el.dataset.address||'') + ' ' + (el.dataset.phones||''));
+          el.style.display = hay.indexOf(q) !== -1 ? '' : 'none';
+        });
+      }, 250);
+    });
+  })();
+
+  // Надёжный toggle для "Часы работы" (Bootstrap 4.2.1)
+  (function () {
+    var hasJQ = !!(window.jQuery && $.fn && $.fn.collapse);
+    if (!hasJQ) return;
+
+    // Синхронизируем aria-expanded с событиями Bootstrap
+    $(document).on('shown.bs.collapse hidden.bs.collapse', '.collapse[id^="hours-"]', function (e) {
+      var id = '#' + this.id;
+      var $btns = $('.js-hours-toggle[data-target="' + id + '"]');
+      var expanded = $(this).hasClass('show');
+      $btns.attr('aria-expanded', expanded ? 'true' : 'false');
+    });
+
+    // Явный show/hide вместо toggle — уходит проблема "не закрывается"
+    document.addEventListener('click', function (e) {
+      var btn = e.target.closest('.js-hours-toggle');
+      if (!btn) return;
+      e.preventDefault();
+      e.stopPropagation();
+      var target = btn.getAttribute('data-target');
+      var $target = $(target);
+      if (!$target.length) return;
+
+      if ($target.hasClass('show')) {
+        $target.collapse('hide');
+      } else {
+        $target.collapse('show');
+      }
+    }, false);
+  })();
+
+  // Кнопка "Показать на карте"
+  (function(){
+    window.__officeMapState = window.__officeMapState || {activeBtn:null,activeFeature:null,restoreStyle:null};
+
+    function parseCoord(v) {
+      var s = String(v||'').trim().replace(',', '.');
+      var n = parseFloat(s);
+      return isFinite(n) ? n : null;
+    }
+
+    function clearHighlight(){
+      var S=window.__officeMapState;
+      try{ if(S.restoreStyle&&S.activeFeature)S.restoreStyle(); }catch(e){}
+      S.activeFeature=null; S.restoreStyle=null;
+      window.dispatchEvent(new CustomEvent('geomap:unfocus'));
+    }
+
+    function highlightNearestFeature(lon,lat){
+      var S=window.__officeMapState;
+      try{
+        var gm=window.__geomap||{},map=gm.map;
+        if(!map||typeof ol==='undefined')return;
+        var sources=[];
+        if(gm.vectorSource&&gm.vectorSource.getFeatures)sources.push(gm.vectorSource);
+        map.getLayers().forEach(function(layer){
+          var src=layer.getSource&&layer.getSource();
+          if(src&&(src instanceof ol.source.Vector)&&sources.indexOf(src)===-1)sources.push(src);
+        });
+        var target=ol.proj.fromLonLat([lon,lat]),best=null,bestD=Infinity;
+        sources.forEach(function(src){
+          (src.getFeatures()||[]).forEach(function(f){
+            try{
+              var c=f.getGeometry().getCoordinates();
+              var d=Math.hypot(c[0]-target[0],c[1]-target[1]);
+              if(d<bestD){bestD=d;best=f;}
+            }catch(e){}
+          });
+        });
+        if(!best)return;
+        clearHighlight();
+        var prevStyle=best.getStyle?best.getStyle():null;
+        best.setStyle(new ol.style.Style({
+          image:new ol.style.Circle({
+            radius:10,
+            fill:new ol.style.Fill({color:'rgba(255,0,0,0.9)'}),
+            stroke:new ol.style.Stroke({color:'#fff',width:3})
+          })
+        }));
+        S.activeFeature=best;
+        S.restoreStyle=function(){try{best.setStyle(prevStyle);}catch(e){}};
+      }catch(e){}
+    }
+
+    document.addEventListener('click',function(e){
+      var btn=e.target.closest('.js-focus-map');
+      if(!btn)return;
+      e.preventDefault(); e.stopPropagation();
+      var S=window.__officeMapState;
+      if(S.activeBtn===btn){
+        btn.classList.remove('btn-secondary');
+        btn.classList.add('btn-outline-secondary');
+        clearHighlight();
+        S.activeBtn=null;
+        return;
+      }
+      if(S.activeBtn){
+        S.activeBtn.classList.remove('btn-secondary');
+        S.activeBtn.classList.add('btn-outline-secondary');
+      }
+      btn.classList.remove('btn-outline-secondary');
+      btn.classList.add('btn-secondary');
+      S.activeBtn=btn;
+      var lat=parseCoord(btn.getAttribute('data-lat'));
+      var lon=parseCoord(btn.getAttribute('data-lon'));
+      if(lat===null||lon===null)return;
+      window.dispatchEvent(new CustomEvent('geomap:focus',{detail:{lat:lat,lon:lon,zoom:18}}));
+      highlightNearestFeature(lon,lat);
+      var mapContainer=document.getElementById('geomapContainer');
+      if(mapContainer)mapContainer.scrollIntoView({behavior:'smooth',block:'start'});
+    });
+  })();
+  </script>
+
+  <style>
+    #officeList .office-item {
+      cursor: default;
+      border: 1px solid rgba(0,0,0,.1);
+      border-radius: .5rem;
+      transition: all .15s ease-in-out;
+    }
+    #officeList .office-item:hover {
+      box-shadow: 0 3px 10px rgba(0,0,0,.1);
+      transform: translateY(-1px);
+    }
+    #officeList .office-item .card-body { padding: .9rem 1rem; }
+    #officeList .office-item i { color: #6c757d; font-size: .9rem; min-width: 16px; text-align: center; }
+    #officeList .office-item hr { border-color: rgba(0,0,0,.05); }
+    #officeList .office-item a.text-dark:hover { color: #007bff; text-decoration: none; }
+    .contact-form .invalid-feedback { display: block; }
+    #geomapContainer { height: 800px; position: relative; }
+    #geomapContainer #map, #geomapContainer .map { height: 100% !important; min-height: 100% !important; }
+  </style>
+
+{% endblock content %}

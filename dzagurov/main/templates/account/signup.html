@@ -1,0 +1,260 @@
+{% extends "dzagurov/base.html" %}
+{% load static %}
+{% load allauth i18n %}
+
+{% block title %}{% trans "Signup" %}{% endblock title %}
+
+{% block content %}
+  <!-- Hero -->
+  <section class="ftco-intro img" style="background-image: url({% static 'images/contacts.webp' %});">
+    <div class="overlay"></div>
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-md-9 text-center">
+          <h2>Регистрация</h2>
+          <p>Зарегистрируйтесь, чтобы использовать весь функционал</p>
+          <p class="mb-0"><a href="#" class="btn btn-white px-4 py-3">Запись на прием</a></p>
+        </div>
+      </div>
+    </div>
+  </section>
+  {% if form.non_field_errors %}
+  <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+{% endif %}
+{% for field in form %}
+  {% for err in field.errors %}
+    <div class="alert alert-danger">{{ err }}</div>
+  {% endfor %}
+{% endfor %}
+
+{% if messages %}
+  {% for m in messages %}
+    <div class="alert alert-{{ m.tags }}">{{ m }}</div>
+  {% endfor %}
+{% endif %}
+
+  <!-- Breadcrumbs -->
+  <section class="blog-banner-area" id="category">
+    <div class="container h-100">
+      <div class="blog-banner">
+        <div class="text-center">
+          <nav aria-label="breadcrumb" class="banner-breadcrumb">
+            <ol class="breadcrumb">
+              <li class="breadcrumb-item"><a href="{% url 'index' %}">Домой</a></li>
+              <li class="breadcrumb-item active" aria-current="page">Регистрация</li>
+            </ol>
+          </nav>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Signup Card -->
+  <section class="login_box_area section-margin">
+    <div class="container">
+      <div class="row justify-content-start">
+        <div class="col-lg-7 mb-4">
+          <div class="card shadow-sm border-0">
+            <div class="card-body p-4">
+              <h5 class="card-title mb-3">Создать аккаунт</h5>
+
+              <form class="row login_form" action="{% url 'account_signup' %}" method="post" novalidate>
+                {% csrf_token %}
+
+                {# Рендер полей (внутри — глаз, стабильные ошибки и т.п.) #}
+                {% include "includes/form_fields.html" with form=form %}
+
+                {# Карманы под клиентские ошибки пароля — гарантируем наличие #}
+                <div id="id_password1_client_error" class="invalid-feedback d-none js-error" aria-live="polite"></div>
+                <div id="id_password2_client_error" class="invalid-feedback d-none js-error" aria-live="polite"></div>
+
+                {# Индикатор силы пароля #}
+                <div class="col-12 mb-2">
+                  <div class="progress" style="height: 6px;">
+                    <div id="pw-strength" class="progress-bar" role="progressbar" style="width: 0%;"></div>
+                  </div>
+                  <small id="pw-hint" class="text-muted">Требования: 8+ символов, верх/низ регистр, цифра, спецсимвол.</small>
+                </div>
+
+                {% if redirect_field_value %}
+                  <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+                {% endif %}
+
+                <div class="col-md-12 form-group mt-3">
+                  <button type="submit" class="btn btn-primary">Зарегистрироваться</button>
+                </div>
+
+                <div class="col-md-12 form-group">
+                  <p class="mb-0">Уже есть аккаунт? <a href="{{ login_url }}">Войдите</a>.</p>
+                </div>
+
+                {% if PASSKEY_SIGNUP_ENABLED %}
+                  <div class="col-md-12 form-group">
+                    <a href="{{ signup_by_passkey_url }}" class="btn btn-outline-secondary btn-block">Зарегистрироваться с помощью passkey</a>
+                  </div>
+                {% endif %}
+
+                {% if SOCIALACCOUNT_ENABLED %}
+                  <div class="col-md-12 form-group">
+                    {% include "socialaccount/snippets/login.html" with page_layout="entrance" %}
+                  </div>
+                {% endif %}
+              </form>
+            </div>
+          </div>
+        </div>
+
+        {# Правая колонка — опциональные преимущества/правила #}
+        <div class="col-lg-5">
+          <div class="card shadow-sm border-0 h-100">
+            <div class="card-body p-4">
+              <h6 class="mb-3">Зачем регистрироваться</h6>
+              <ul class="mb-4">
+                <li>Быстрая запись на приём</li>
+                <li>История анализов и заказов</li>
+                <li>Персональные рекомендации</li>
+              </ul>
+              <h6 class="mb-2">Советы по паролю</h6>
+              <ul class="small mb-0 text-muted">
+                <li>Используйте фразу или менеджер паролей</li>
+                <li>Не повторяйте пароли с других сайтов</li>
+                <li>Включите двухфакторную аутентификацию после регистрации</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  {# === Клиентская валидация пароля (не конфликтует с allauth) === #}
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const p1 = document.getElementById("id_password1");
+      const p2 = document.getElementById("id_password2");
+      const e1 = document.getElementById("id_password1_client_error");
+      const e2 = document.getElementById("id_password2_client_error");
+      const meter = document.getElementById("pw-strength");
+
+      // если include не создал карманы — создадим динамически
+      function ensureClientErrorPocket(input, el) {
+        if (input && !el) {
+          const group = input.closest(".form-group") || input.parentNode;
+          const pocket = document.createElement("div");
+          pocket.id = input.id + "_client_error";
+          pocket.className = "invalid-feedback d-none js-error";
+          pocket.setAttribute("aria-live", "polite");
+          group.parentNode.insertBefore(pocket, group.nextSibling);
+          return pocket;
+        }
+        return el;
+      }
+      const err1 = ensureClientErrorPocket(p1, e1);
+      const err2 = ensureClientErrorPocket(p2, e2);
+
+      function hasServerErrors(input) {
+        const block = input?.closest(".form-group");
+        return !!block?.querySelector(".invalid-feedback:not(.js-error)");
+      }
+
+      function setClientError(input, box, msg) {
+        if (!input || !box) return;
+        if (hasServerErrors(input)) {
+          box.textContent = "";
+          box.classList.add("d-none");
+          input.classList.add("is-invalid");
+          return;
+        }
+        if (msg) {
+          box.textContent = msg;
+          box.classList.remove("d-none");
+          input.classList.add("is-invalid");
+        } else {
+          box.textContent = "";
+          box.classList.add("d-none");
+          input.classList.remove("is-invalid");
+        }
+      }
+
+      function scorePassword(s) {
+        if (!s) return 0;
+        let score = 0;
+        const rules = [
+          /[a-zа-я]/,     // lower
+          /[A-ZА-Я]/,     // upper
+          /\d/,           // digit
+          /[^A-Za-z0-9А-Яа-я]/ // special
+        ];
+        rules.forEach(r => { if (r.test(s)) score += 1; });
+        if (s.length >= 8) score += 1;
+        if (s.length >= 12) score += 1;
+        return Math.min(score, 6); // 0..6
+      }
+
+      function paintMeter(val) {
+        if (!meter) return;
+        const pct = (val / 6) * 100;
+        meter.style.width = pct + "%";
+        meter.classList.remove("bg-danger", "bg-warning", "bg-success");
+        if (val <= 2) meter.classList.add("bg-danger");
+        else if (val <= 4) meter.classList.add("bg-warning");
+        else meter.classList.add("bg-success");
+      }
+
+      function isPasswordComplex(password) {
+        if (!password) return false;
+        const lengthCheck = password.length >= 8;
+        const upperCheck = /[A-ZА-Я]/.test(password);
+        const lowerCheck = /[a-zа-я]/.test(password);
+        const digitCheck = /\d/.test(password);
+        const specialCheck = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password);
+        return lengthCheck && upperCheck && lowerCheck && digitCheck && specialCheck;
+      }
+
+      function validatePasswords() {
+        let ok = true;
+        const v1 = p1?.value || "";
+        const v2 = p2?.value || "";
+
+        // сила пароля
+        paintMeter(scorePassword(v1));
+
+        // сложность p1
+        if (p1) {
+          let m1 = "";
+          if (!isPasswordComplex(v1)) {
+            m1 = "Пароль должен содержать минимум: 8 символов, заглавную и строчную буквы, цифру и спецсимвол.";
+            ok = false;
+          }
+          setClientError(p1, err1, m1);
+        }
+
+        // совпадение p2
+        if (p2) {
+          let m2 = "";
+          if (v2 && v1 !== v2) {
+            m2 = "Пароли не совпадают.";
+            ok = false;
+          }
+          setClientError(p2, err2, m2);
+        }
+
+        return ok;
+      }
+
+      p1?.addEventListener("input", validatePasswords);
+      p2?.addEventListener("input", validatePasswords);
+      p1?.addEventListener("blur", validatePasswords);
+      p2?.addEventListener("blur", validatePasswords);
+
+      const form = document.querySelector("form[action$='account_signup']") || document.querySelector("form");
+      form?.addEventListener("submit", function (e) {
+        if (!validatePasswords()) e.preventDefault();
+      });
+
+      // первичная инициализация
+      validatePasswords();
+    });
+  </script>
+{% endblock content %}

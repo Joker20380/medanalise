@@ -1,0 +1,47 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pdb
+*.so
+*.egg-info/
+*.sqlite3
+
+# --- Django ---
+static/
+media/
+staticfiles/
+logs/
+*.log
+
+# --- Virtual environments ---
+venv/
+env/
+.venv/
+virtualenv.pyz
+
+# --- Environment files ---
+dzagurov/.env
+*.env
+
+# --- IDE / OS ---
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+
+# --- Compiled / temp ---
+*.cache
+*.pot
+*.mo
+*.swp
+*.tmp
+*.bak
+
+# --- JetBrains / PyCharm ---
+.idea/
+*.ipr
+*.iws
+*.iml

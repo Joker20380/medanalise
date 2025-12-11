@@ -1,0 +1,49 @@
+{# templates/includes/form_fields_only.html #}
+
+{% if form.non_field_errors %}
+  <div class="col-md-12">
+    <div class="alert alert-danger">
+      {{ form.non_field_errors }}
+    </div>
+  </div>
+{% endif %}
+
+{% for field in form %}
+  {% if field.field.widget.input_type == 'checkbox' %}
+    <div class="col-md-12 mb-3">
+      <div class="form-check">
+        {{ field }}
+        <label for="{{ field.id_for_label }}" class="form-check-label">{{ field.label }}</label>
+        {% if field.errors %}<div class="invalid-feedback d-block">{{ field.errors }}</div>{% endif %}
+        {% if field.help_text %}<small class="form-text text-muted">{{ field.help_text|safe }}</small>{% endif %}
+      </div>
+    </div>
+
+  {% elif field.field.widget.input_type == 'password' %}
+    <div class="col-md-12 form-group">
+      <p class="form-input">
+        <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+        <div class="input-group">
+          {{ field }}
+          <div class="input-group-append">
+            <button type="button" class="btn btn-outline-secondary toggle-password" tabindex="-1" aria-label="Показать/скрыть пароль">
+              <i class="fa fa-eye"></i>
+            </button>
+          </div>
+        </div>
+      </p>
+      {% if field.errors %}<div class="invalid-feedback d-block">{{ field.errors }}</div>{% endif %}
+      {% if field.help_text %}<small class="form-text text-muted help-text">{{ field.help_text|safe }}</small>{% endif %}
+    </div>
+
+  {% else %}
+    <div class="col-md-12 form-group">
+      <p class="form-input">
+        <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+        {{ field }}
+      </p>
+      {% if field.errors %}<div class="invalid-feedback d-block">{{ field.errors }}</div>{% endif %}
+      {% if field.help_text %}<small class="form-text text-muted help-text">{{ field.help_text|safe }}</small>{% endif %}
+    </div>
+  {% endif %}
+{% endfor %}

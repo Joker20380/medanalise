@@ -1,0 +1,118 @@
+{# templates/includes/form_fields.html #}
+{% load i18n widget_tweaks %}
+
+<style>
+  /* === Базовые стили для всех инпутов === */
+  .login_box_area .form-group input,
+  .login_box_area .form-group select,
+  .login_box_area .form-group textarea {
+    width: 100%;
+    display: block;
+  }
+
+  /* Контейнер под инпут и кнопку-глаз */
+  .has-eye {
+    position: relative;
+    display: inline-block;   /* предотвращает схлопывание */
+    width: 100%;
+    vertical-align: top;
+  }
+
+  /* Отступ под глаз */
+  .has-eye input {
+    padding-right: 2.5rem;
+  }
+
+  /* При ошибке Bootstrap добавляет фон и отступ — убираем */
+  .has-eye .form-control.is-invalid {
+    background-image: none !important;
+    padding-right: 2.5rem !important;
+  }
+
+  /* Кнопка-глаз — фиксировано справа по центру */
+  .password-toggle.eye-btn {
+    position: absolute;
+    right: .5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: #6c757d;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: auto;
+  }
+
+  .password-toggle.eye-btn:hover { color: #000; }
+
+  /* Иконки глаз */
+  .pw-eye::before {
+    content: "👁";
+    display: inline-block;
+    line-height: 1;
+    font-size: 1.1rem;
+  }
+  .password-toggle.active .pw-eye::before { content: "🙈"; }
+
+  .invalid-feedback.d-block { white-space: pre-line; }
+</style>
+
+
+{% for field in form %}
+  <div class="col-md-12 form-group mb-3">
+    {% if field.label %}
+      <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+    {% endif %}
+
+    {% if field.field.widget.input_type == "password" %}
+      <div class="has-eye">
+        {{ field|add_class:"form-control"|add_error_class:"is-invalid" }}
+        <button
+          type="button"
+          class="password-toggle eye-btn"
+          data-target-id="{{ field.id_for_label }}"
+          aria-label="{% trans 'Показать пароль' %}">
+          <span class="pw-eye" aria-hidden="true"></span>
+        </button>
+      </div>
+    {% else %}
+      {{ field|add_class:"form-control"|add_error_class:"is-invalid" }}
+    {% endif %}
+
+    {% if field.help_text %}
+      <small class="form-text text-muted help-text">{{ field.help_text|safe }}</small>
+    {% endif %}
+
+    {% if field.errors %}
+      {% for error in field.errors %}
+        <div class="invalid-feedback d-block">{{ error }}</div>
+      {% endfor %}
+    {% endif %}
+  </div>
+{% endfor %}
+
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // === переключение видимости пароля ===
+    document.querySelectorAll(".password-toggle").forEach((btn) => {
+      const input = document.getElementById(btn.dataset.targetId);
+      if (!input) return;
+
+      btn.addEventListener("click", () => {
+        const toText = input.type === "password";
+        input.type = toText ? "text" : "password";
+        btn.classList.toggle("active", toText);
+        btn.setAttribute(
+          "aria-label",
+          toText ? "Скрыть пароль" : "Показать пароль"
+        );
+      });
+    });
+  });
+</script>

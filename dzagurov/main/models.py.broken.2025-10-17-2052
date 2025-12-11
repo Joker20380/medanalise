@@ -1,0 +1,264 @@
+from django.core.management.base import BaseCommand
+from django.db import transaction
+import xml.etree.ElementTree as ET
+from decimal import Decimal, InvalidOperation
+
+from main.services.nacpp_client import NacppClient
+from main.models import (
+    SyncStamp, LabCategory, Biomaterial, ContainerType,
+    LabTest, LabPanel, PanelItem, PanelCategory,
+    TestCategory, TestRequirement, Preanalytic
+)
+
+
+# ----------------- helpers -----------------
+
+PRICE_KEYS = ("price", "cost", "tariff", "amount", "sum", "value", "price_rub")
+
+
+def _val_any(el, keys, default=""):
+    """
+    Вернуть значение по первому совпавшему ключу из атрибута или дочернего тега.
+    """
+    for k in keys:
+        if k in el.attrib and (el.attrib[k] or "").strip():
+            return el.attrib[k].strip()
+        node = el.find(k)
+        if node is not None and (node.text or "").strip():
+            return node.text.strip()
+    return default
+
+
+def _to_decimal(v):
+    if not v:
+        return None
+    v = str(v).replace(",", ".").strip()
+    try:
+        return Decimal(v)
+    except (InvalidOperation, ValueError):
+        return None
+
+
+def _find_price(el):
+    """
+    Универсально пытаемся достать цену из текущего узла и его потомков.
+    Возвращает Decimal или None.
+    """
+    # 1) атрибуты текущего узла
+    for k, v in el.attrib.items():
+        if any(p in k.lower() for p in PRICE_KEYS):
+            dec = _to_decimal(v)
+            if dec is not None:
+                return dec
+
+    # 2) прямые дочерние теги и их атрибуты
+    for child in list(el):
+        tag = child.tag.lower()
+        if any(p == tag or p in tag for p in PRICE_KEYS):
+            if (child.text or "").strip():
+                dec = _to_decimal(child.text)
+                if dec is not None:
+                    return dec
+        for k, v in child.attrib.items():
+            if any(p in k.lower() for p in PRICE_KEYS):
+                dec = _to_decimal(v)
+                if dec is not None:
+                    return dec
+
+    # 3) глубокий поиск
+    for node in el.iter():
+        if node is el:
+            continue
+        tag = node.tag.lower()
+        if any(p in tag for p in PRICE_KEYS):
+            if (node.text or "").strip():
+                dec = _to_decimal(node.text)
+                if dec is not None:
+                    return dec
+            for k, v in node.attrib.items():
+                if any(p in k.lower() for p in PRICE_KEYS):
+                    dec = _to_decimal(v)
+                    if dec is not None:
+                        return dec
+
+    return None
+
+
+# ----------------- command -----------------
+
+class Command(BaseCommand):
+    help = "Импорт каталогов NACPP (под структуру kdldzagurov.ru): категории, биоматериалы, тесты, панели, контейнеры, преаналитика."
+
+    def add_arguments(self, parser):
+        parser.add_argument("--login", default="TESTTT")
+        parser.add_argument("--password", default="1233")
+        parser.add_argument("--base", default=None)
+
+    def handle(self, *args, **opts):
+        client = NacppClient(opts["login"], opts["password"], base=opts["base"])
+        client.login()
+        self.stdout.write(self.style.SUCCESS("Logged in."))
+
+        # ---------- CATEGORIES ----------
+        self.stdout.write("Импорт категорий...")
+        xml = client.get_catalog("panelscategories")
+        root = ET.fromstring(xml)
+        with transaction.atomic():
+            for c in root.findall(".//category"):
+                ext_id = _val_any(c, ["id", "code"]) or _val_any(c, ["name"])
+                if not ext_id:
+                    continue
+                name = _val_any(c, ["name"]) or ext_id
+                parent_id = _val_any(c, ["parent"])
+                LabCategory.objects.update_or_create(
+                    external_id=ext_id[:128],
+                    defaults={
+                        "name": name,
+                        "parent_external_id": parent_id,
+                        "raw_xml": ET.tostring(c, encoding="unicode"),
+                    },
+                )
+            SyncStamp.objects.update_or_create(catalog="panelscategories")
+
+        # ---------- BIOMATERIALS ----------
+        self.stdout.write("Импорт биоматериалов...")
+        biomaterials_loaded = False
+        for dict_name in ("bio", "biomaterials"):
+            try:
+                xml = client.get_catalog(dict_name)
+                root = ET.fromstring(xml)
+                with transaction.atomic():
+                    # ожидаем узлы <biomaterial ...> или, на худой конец, <item ...>
+                    nodes = root.findall(".//biomaterial")
+                    if not nodes:
+                        nodes = root.findall(".//item")
+                    for m in nodes:
+                        ext_id = _val_any(m, ["id", "code"]) or _val_any(m, ["name"])
+                        if not ext_id:
+                            continue
+                        name = _val_any(m, ["name"]) or ext_id
+                        Biomaterial.objects.update_or_create(
+                            external_id=ext_id[:128],
+                            defaults={
+                                "name": name,
+                                "raw_xml": ET.tostring(m, encoding="unicode"),
+                            },
+                        )
+                    SyncStamp.objects.update_or_create(catalog="biomaterials")
+                biomaterials_loaded = True
+                break
+            except Exception:
+                self.stdout.write(f"{dict_name}: skipped (нет каталога/ошибка).")
+        if not biomaterials_loaded:
+            self.stdout.write("biomaterials: не удалось загрузить (каталог отсутствует).")
+
+        # ---------- TESTS ----------
+        # <test code="..."><name>...</name> ... (возможна цена глубоко внутри)
+        self.stdout.write("Импорт тестов...")
+        xml = client.get_catalog("tests")
+        root = ET.fromstring(xml)
+        with transaction.atomic():
+            for t in root.findall(".//test"):
+                code = _val_any(t, ["code"])
+                if not code:
+                    continue
+                name = _val_any(t, ["name"]) or code
+                price = _find_price(t)
+
+                LabTest.objects.update_or_create(
+                    external_id=code[:128],
+                    defaults={
+                        "code": code[:128],
+                        "name": name,
+                        "short_name": "",
+                        "price": price,
+                        "biomaterial": None,   # если в tests начнут присылать материал — свяжем в следующем патче
+                        "container_type": None,
+                        "raw_xml": ET.tostring(t, encoding="unicode"),
+                    },
+                )
+            SyncStamp.objects.update_or_create(catalog="tests")
+
+        # ---------- PANELS ----------
+        # <panel code="..." category="..."><name>...</name> ... (возможна цена глубоко внутри)
+        self.stdout.write("Импорт панелей...")
+        xml = client.get_catalog("panels")
+        root = ET.fromstring(xml)
+        with transaction.atomic():
+            for p in root.findall(".//panel"):
+                code = _val_any(p, ["code"])
+                if not code:
+                    continue
+                name = _val_any(p, ["name"]) or code
+                cat_id = _val_any(p, ["category"])
+                price = _find_price(p)
+
+                panel, _ = LabPanel.objects.update_or_create(
+                    external_id=code[:128],
+                    defaults={
+                        "code": code[:128],
+                        "name": name,
+                        "price": price,
+                        "raw_xml": ET.tostring(p, encoding="unicode"),
+                    },
+                )
+
+                # Привязка панелей к категориям по атрибуту category
+                if cat_id:
+                    cat = LabCategory.objects.filter(external_id=cat_id).first()
+                    if cat:
+                        PanelCategory.objects.get_or_create(panel=panel, category=cat)
+
+            SyncStamp.objects.update_or_create(catalog="panels")
+
+        # ---------- CONTAINER TYPES ----------
+        # <containertype code="..." color="#xxxxxx" />
+        self.stdout.write("Импорт типов контейнеров...")
+        xml = client.get_catalog("containertypes")
+        root = ET.fromstring(xml)
+        with transaction.atomic():
+            for ct in root.findall(".//containertype"):
+                code = _val_any(ct, ["code"])
+                if not code:
+                    continue
+                name = code  # в дампе нет имени — используем code как name
+                ContainerType.objects.update_or_create(
+                    external_id=code[:128],
+                    defaults={
+                        "name": name,
+                        "raw_xml": ET.tostring(ct, encoding="unicode"),
+                    },
+                )
+            SyncStamp.objects.update_or_create(catalog="containertypes")
+
+        # ---------- PREANALYTICS ----------
+        # <preanalytic><panel_code>10.100</panel_code> ...</preanalytic>
+        self.stdout.write("Импорт преаналитики...")
+        xml = client.get_catalog("preanalytics")
+        root = ET.fromstring(xml)
+        with transaction.atomic():
+            for node in root.findall(".//preanalytic"):
+                panel_code = _val_any(node, ["panel_code"])
+                if not panel_code:
+                    continue
+                Preanalytic.objects.update_or_create(
+                    target_type="panel",
+                    target_external_id=panel_code[:128],
+                    defaults={"raw_xml": ET.tostring(node, encoding="unicode")},
+                )
+            SyncStamp.objects.update_or_create(catalog="preanalytics")
+
+        # ---------- финальная статистика ----------
+        self.stdout.write(self.style.SUCCESS("Done."))
+        self.stdout.write(
+            "Stats: "
+            f"categories={LabCategory.objects.count()}, "
+            f"biomaterials={Biomaterial.objects.count()}, "
+            f"tests={LabTest.objects.count()}, "
+            f"panels={LabPanel.objects.count()}, "
+            f"containertypes={ContainerType.objects.count()}, "
+            f"preanalytics={Preanalytic.objects.count()}, "
+            f"panel_cats={PanelCategory.objects.count()}"
+        )
+
+        client.logout()

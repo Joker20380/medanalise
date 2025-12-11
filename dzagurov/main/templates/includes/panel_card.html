@@ -1,0 +1,262 @@
+{# expects: panel (obj Panel), optional layout in {'grid'} #}
+<div class="lab-panel {% if layout == 'grid' %}lab-panel--grid{% endif %} card shadow-sm h-100 position-relative" id="panel-{{ panel.code }}">
+  <!-- Вертикальный разделитель -->
+  <div class="vertical-divider"></div>
+
+  <!-- GRID layout -->
+  <div class="card-inner position-relative">
+    <!-- Левая колонка -->
+    <div class="left-col">
+      <div class="text-muted small mb-3 meta">
+        Код: <strong>{{ panel.code }}</strong>
+        {% if panel.category %} • Категория: {{ panel.category.name }}{% endif %}
+      </div>
+
+      <h2 class="panel-title h5 font-weight-bold mb-2">{{ panel.name|default:"(без названия)" }}</h2>
+
+      {# ===== Материалы (PanelMaterial) ===== #}
+      {% with materials=panel.panel_materials.all %}
+        {% if materials %}
+          <div class="mb-3">
+            {% for pm in materials %}
+              {% with bio=pm.biomaterial cont=pm.container_type %}
+                <span class="badge badge-light border mr-1 mb-1">
+                  <i class="fa-solid fa-vial mr-1" aria-hidden="true"></i>
+                  {{ bio.name|default:bio.code }}
+                  {% if cont %} • {{ cont.name|default:cont.code }}{% endif %}
+                  {% if cont and cont.color %}
+                    <span class="ml-1 d-inline-block align-middle rounded-circle" style="width:10px;height:10px;background:{{ cont.color }};"></span>
+                  {% endif %}
+                </span>
+                {% if bio.barcodeinfo %}
+                  <span class="badge badge-light border mr-1 mb-1">
+                    <i class="fa-solid fa-barcode mr-1" aria-hidden="true"></i>
+                    {{ bio.barcodeinfo }}
+                  </span>
+                {% endif %}
+              {% endwith %}
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+
+      {# ===== Преаналитика (вкладки) ===== #}
+      {% with pa=panel.preanalytic %}
+        {% if pa %}
+          {% with slug=panel.code|slugify %}
+            <div class="mb-3">
+              <ul class="nav nav-tabs lab-pa-tabs" role="tablist" id="pa-tabs-{{ slug }}">
+                {% if pa.training %}
+                  <li class="nav-item" role="presentation">
+                    <a class="nav-link"
+                       id="tab-training-{{ slug }}"
+                       data-toggle="tab"
+                       href="#pane-training-{{ slug }}"
+                       role="tab"
+                       aria-controls="pane-training-{{ slug }}"
+                       aria-selected="false">
+                      <i class="fa-regular fa-clipboard mr-1"></i>Подготовка
+                    </a>
+                  </li>
+                {% endif %}
+                {% if pa.note %}
+                  <li class="nav-item" role="presentation">
+                    <a class="nav-link"
+                       id="tab-note-{{ slug }}"
+                       data-toggle="tab"
+                       href="#pane-note-{{ slug }}"
+                       role="tab"
+                       aria-controls="pane-note-{{ slug }}"
+                       aria-selected="false">
+                      <i class="fa-regular fa-note-sticky mr-1"></i>Примечание
+                    </a>
+                  </li>
+                {% endif %}
+              </ul>
+
+              <div class="tab-content border border-top-0 p-3 rounded-bottom lab-pa-pane">
+                {% if pa.training %}
+                  <div class="tab-pane fade"
+                       id="pane-training-{{ slug }}"
+                       role="tabpanel"
+                       aria-labelledby="tab-training-{{ slug }}">
+                    <div class="text-body">{{ pa.training|linebreaksbr }}</div>
+                  </div>
+                {% endif %}
+                {% if pa.centrifugation %}
+                  <div class="tab-pane fade"
+                       id="pane-centrifugation-{{ slug }}"
+                       role="tabpanel"
+                       aria-labelledby="tab-centrifugation-{{ slug }}">
+                    <div class="text-body">{{ pa.centrifugation|linebreaksbr }}</div>
+                  </div>
+                {% endif %}
+                {% if pa.storage_transportation %}
+                  <div class="tab-pane fade"
+                       id="pane-storage-{{ slug }}"
+                       role="tabpanel"
+                       aria-labelledby="tab-storage-{{ slug }}">
+                    <div class="text-body">{{ pa.storage_transportation|linebreaksbr }}</div>
+                  </div>
+                {% endif %}
+                {% if pa.min_count %}
+                  <div class="tab-pane fade"
+                       id="pane-mincount-{{ slug }}"
+                       role="tabpanel"
+                       aria-labelledby="tab-mincount-{{ slug }}">
+                    <div class="h6 mb-0">
+                      <span class="badge badge-light border">
+                        <i class="fa-solid fa-flask mr-1"></i>{{ pa.min_count }}
+                      </span>
+                    </div>
+                  </div>
+                {% endif %}
+                {% if pa.note %}
+                  <div class="tab-pane fade"
+                       id="pane-note-{{ slug }}"
+                       role="tabpanel"
+                       aria-labelledby="tab-note-{{ slug }}">
+                    <div class="text-muted">{{ pa.note|linebreaksbr }}</div>
+                  </div>
+                {% endif %}
+              </div>
+
+              {# Автоматическая активация первой доступной вкладки (BS4). Для BS5 смени data-toggle -> data-bs-toggle. #}
+              <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                  try {
+                    var nav = document.getElementById('pa-tabs-{{ slug }}');
+                    if (!nav) return;
+                    var firstLink = nav.querySelector('.nav-link');
+                    if (!firstLink) return;
+                    firstLink.classList.add('active');
+                    var paneId = firstLink.getAttribute('href').slice(1);
+                    var pane = document.getElementById(paneId);
+                    if (pane) { pane.classList.add('show','active'); }
+                  } catch(e) {}
+                });
+              </script>
+            </div>
+          {% endwith %}
+        {% else %}
+          <div class="alert alert-light border mb-3 py-2 small d-flex align-items-center">
+            <i class="fa-regular fa-circle-question mr-2"></i>
+            Преаналитические требования не указаны.
+          </div>
+        {% endif %}
+      {% endwith %}
+
+      {# ===== Связанные панели ===== #}
+      {% with links=panel.linked_children.all %}
+        {% if links %}
+          <div class="font-weight-medium mb-1">Связанные панели:</div>
+          <ul class="mb-0 pl-3">
+            {% for rel in links %}
+              {% with p2=rel.extra_panel %}
+                <li>
+                  <a href="{{ p2.get_absolute_url|default:'#' }}" class="text-secondary text-decoration-none">
+                    {{ p2.name }}
+                  </a>
+                </li>
+              {% endwith %}
+            {% endfor %}
+          </ul>
+        {% endif %}
+      {% endwith %}
+    </div>
+
+    <!-- Правая колонка -->
+    <div class="price-col">
+      <div class="price-wrap text-center">
+        {% with svc=panel.services.all|first %}
+          {% if svc and svc.cost %}
+            <div class="h4 font-weight-bold mb-2">
+              {{ svc.cost }}
+              <span class="font-weight-normal">
+                {% if svc.currency == 'RUB' %}₽{% elif svc.currency == 'EUR' %}€{% else %}{{ svc.currency }}{% endif %}
+              </span>
+            </div>
+          {% else %}
+            <div class="text-muted mb-2">по запросу</div>
+          {% endif %}
+        {% endwith %}
+
+        <a href="#" class="btn btn-primary btn-sm btn-block mb-2">Добавить</a>
+        <a href="#" class="btn btn-outline-secondary btn-sm btn-block">Подробнее</a>
+      </div>
+    </div>
+
+    <!-- Горизонтальная линия (между контентом и футером) -->
+    <div class="horizontal-divider"></div>
+  </div>
+
+  <div class="card-footer bg-light text-muted small d-flex justify-content-between align-items-center">
+    <div>
+      {% if panel.duration %}
+        <i class="fa-regular fa-clock mr-1"></i>
+        Срок выполнения: {{ panel.duration }} календарных дней
+      {% endif %}
+    </div>
+    <div></div>
+  </div>
+</div>
+
+<style>
+  .lab-panel { --price-col-w: 220px; position: relative; overflow: hidden; }
+  .lab-panel .card-inner {
+    display: grid;
+    grid-template-columns: minmax(0,1fr) var(--price-col-w);
+    grid-column-gap: 1.25rem;
+    align-items: stretch;
+    position: relative;
+    padding: .75rem 0;
+  }
+  .lab-panel .vertical-divider {
+    position: absolute; top: 10px; bottom: 10px; right: var(--price-col-w);
+    width: 1px; background-color: rgba(0,0,0,.12); z-index: 1;
+  }
+  .lab-panel .horizontal-divider {
+    position: absolute; left: 15px; right: 15px; bottom: 0;
+    height: 1px; background-color: rgba(0,0,0,.12); z-index: 2;
+  }
+  .lab-panel .left-col { min-width: 0; overflow: hidden; padding-left: 1rem; padding-right: .5rem; }
+  .lab-panel .left-col, .lab-panel .left-col * { overflow-wrap: anywhere; word-break: break-word; }
+  .lab-panel .panel-title { margin: 0 0 .25rem 0; line-height: 1.35; }
+  .lab-panel .meta { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .lab-panel .price-col {
+    width: var(--price-col-w); display: flex; align-items: center; justify-content: center;
+    padding: 0 1rem; background: rgba(0,0,0,.02); z-index: 2;
+  }
+
+  /* —— Преаналитика: вкладки —— */
+  .lab-pa-tabs .nav-link { padding: .5rem .75rem; font-size: .9rem; }
+  .lab-pa-tabs .nav-link i { opacity: .8; }
+  .lab-pa-pane { background: #fff; }
+  .lab-panel--grid .lab-pa-pane { padding: .75rem; }
+
+  .lab-panel .card-footer {
+    background: #f8f9fa;
+    border-top: 0 !important;
+    box-shadow: none;
+    padding: .5rem 1rem;
+  }
+
+  /* --- Адаптация для сеточного режима / узких карточек --- */
+  .lab-panel--grid .vertical-divider { display: none !important; }
+  .lab-panel--grid .card-inner { grid-template-columns: 1fr !important; padding: .5rem 0 !important; }
+  .lab-panel--grid .price-col {
+    width: 100% !important; background: none !important; padding: .5rem 0 !important;
+    justify-content: flex-start !important; text-align: left !important;
+  }
+  .lab-panel--grid .horizontal-divider { left: 0; right: 0; }
+
+  @media (max-width: 991.98px) {
+    .lab-panel .vertical-divider { display: none !important; }
+    .lab-panel .card-inner { grid-template-columns: 1fr !important; padding: .5rem 0 !important; }
+    .lab-panel .price-col {
+      width: 100% !important; background: none !important; padding: .5rem 0 !important;
+      justify-content: flex-start !important; text-align: left !important;
+    }
+    .lab-panel .horizontal-divider { left: 0; right: 0; }
+  }
+</style>
