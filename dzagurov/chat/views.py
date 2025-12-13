@@ -4,6 +4,7 @@ import hashlib
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_POST
+from django.views.decorators.cache import never_cache
 
 from .models import ChatThread, ChatMessage
 
@@ -54,27 +55,65 @@ def bootstrap(request):
     })
 
 
-@require_GET
+@never_cache
 def chat_api_messages(request):
     """
-    GET /chat/api/messages/ — отдать историю сообщений текущего посетителя.
+    GET /chat/api/messages/?after_id=123
+    - Если after_id задан: вернуть только сообщения с id > after_id
+    - Если after_id не задан: вернуть последние N (для первого открытия/фоллбэка)
     """
     thread = _get_or_create_thread(request)
-    messages = thread.messages.order_by("created_at")
+
+    after_id_raw = request.GET.get("after_id")
+    try:
+        after_id = int(after_id_raw) if after_id_raw is not None else None
+    except (TypeError, ValueError):
+        after_id = None
+
+    LIMIT = 50  # под UX и экономию CPU/DB
+
+    qs = thread.messages.all()
+
+    # Важно: id — лучше ключ для инкрементальной выборки
+    if after_id is not None:
+        qs = qs.filter(id__gt=after_id).order_by("id")[:LIMIT]
+    else:
+        # Если фронт открылся и lastMessageId неизвестен — не отдаём всю историю
+        # отдаём последние LIMIT, но в правильном порядке
+        qs = qs.order_by("-id")[:LIMIT]
+        qs = reversed(list(qs))  # чтобы вернуть по возрастанию id
+
+        data = {
+            "thread_uuid": str(thread.uuid),
+            "messages": [
+                {
+                    "id": m.id,
+                    "sender": m.sender,
+                    "text": m.text,
+                    "created_at": m.created_at.isoformat(),
+                }
+                for m in qs
+            ],
+        }
+        return JsonResponse(data)
+
+    # Оптимизация сериализации: values() (меньше накладных расходов ORM)
+    rows = list(qs.values("id", "sender", "text", "created_at"))
 
     data = {
         "thread_uuid": str(thread.uuid),
         "messages": [
             {
-                "id": m.id,
-                "sender": m.sender,
-                "text": m.text,
-                "created_at": m.created_at.isoformat(),
+                "id": r["id"],
+                "sender": r["sender"],
+                "text": r["text"],
+                "created_at": r["created_at"].isoformat(),
             }
-            for m in messages
-        ]
+            for r in rows
+        ],
     }
     return JsonResponse(data)
+
 
 
 @csrf_exempt  # для простоты, чтобы не возиться с CSRF в JS

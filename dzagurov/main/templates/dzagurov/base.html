@@ -323,43 +323,51 @@
 
     {% include 'includes/cookie_notice.html' %}
 
-    {% if user.is_authenticated %}
-    <!-- =============================== -->
-    <!-- Чат-виджет ассистента -->
-    <!-- =============================== -->
-    <div id="chat-widget"
-         class="chat-widget"
-         data-bootstrap-url="{% url 'chat:chat_api_bootstrap' %}"
-         data-messages-url="{% url 'chat:chat_api_messages' %}"
-         data-send-url="{% url 'chat:chat_api_send' %}">
+    <!-- PORTAL ROOT: всегда в конце body -->
+    <div id="chat-widget-root">
+      {% if user.is_authenticated %}
+      <div id="chat-widget"
+           class="chat-widget chat-collapsed"
+           data-bootstrap-url="{% url 'chat:chat_api_bootstrap' %}"
+           data-messages-url="{% url 'chat:chat_api_messages' %}"
+           data-send-url="{% url 'chat:chat_api_send' %}">
 
-      <div class="chat-widget-header">
-        <span>Ассистент</span>
-        <button type="button" class="chat-widget-toggle" aria-label="Свернуть">
-          &times;
-        </button>
+        <!-- Круглая кнопка (FAB) -->
+        <button type="button"
+                id="chat-fab"
+                class="chat-fab"
+                aria-label="Онлайн-чат">💬</button>
+
+        <!-- Стеклянная панель чата -->
+        <div class="chat-panel">
+          <div class="chat-widget-header">
+            <span>Ассистент</span>
+            <button type="button"
+                    class="chat-widget-toggle"
+                    aria-label="Свернуть">×</button>
+          </div>
+
+          <div class="chat-widget-body">
+            <div class="chat-messages" id="chat-messages"></div>
+
+            <form id="chat-form" class="chat-form" autocomplete="off">
+              <textarea id="chat-input"
+                        rows="2"
+                        class="form-control chat-input-box"
+                        placeholder="Напишите сообщение..."></textarea>
+
+              <button type="submit" class="btn btn-primary chat-send-btn w-100 mt-2">
+                Отправить
+              </button>
+            </form>
+          </div>
+        </div>
       </div>
 
-      <div class="chat-widget-body">
-        <div class="chat-messages" id="chat-messages"></div>
-
-        <form id="chat-form" class="chat-form" autocomplete="off">
-          <textarea
-            id="chat-input"
-            rows="2"
-            class="form-control"
-            placeholder="Напишите сообщение..."
-          ></textarea>
-          <button type="submit" class="btn btn-primary chat-send-btn w-100 mt-2">
-            Отправить
-          </button>
-        </form>
-      </div>
+      <!-- JS логика чат-виджета -->
+      <script src="{% static 'js/chat_widget.js' %}"></script>
+      {% endif %}
     </div>
-
-    <!-- JS логика чат-виджета -->
-    <script src="{% static 'js/chat_widget.js' %}"></script>
-    {% endif %}
 
   </body>
 </html>

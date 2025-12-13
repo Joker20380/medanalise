@@ -11,6 +11,9 @@ class ChatThread(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
     closed_at = models.DateTimeField(null=True, blank=True)
+    vk_peer_id = models.BigIntegerField(null=True, blank=True, db_index=True)
+    vk_from_id = models.BigIntegerField(null=True, blank=True, db_index=True)
+
 
     # для анонимов — завязка на сессию браузера
     visitor_session = models.CharField(
@@ -42,22 +45,42 @@ class ChatMessage(models.Model):
         ("system", "System"),
     ]
 
+    vk_message_id = models.CharField(
+        max_length=64,
+        blank=True,
+        null=True,
+        unique=True,
+        db_index=True,  # ускорит exists/filter по vk_message_id
+    )
+
     thread = models.ForeignKey(
-        ChatThread,
+        "ChatThread",
         on_delete=models.CASCADE,
         related_name="messages",
+        db_index=True,
     )
+
     sender = models.CharField(
         max_length=16,
         choices=SENDER_CHOICES,
+        db_index=True,  # опционально, но полезно для админки/фильтров
     )
+
     text = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
 
     def __str__(self):
         return f"[{self.sender}] {self.text[:40]}"
 
     class Meta:
-        ordering = ("created_at",)
+        # Важно: для инкрементального polling дешевле и стабильнее order_by("id")
+        # Это не ломает created_at, он всё равно есть и отображается.
+        ordering = ("id",)
         verbose_name = "Сообщение чата"
         verbose_name_plural = "Сообщения чата"
+        indexes = [
+            # Ключевой индекс под запрос:
+            # WHERE thread_id = ? AND id > ? ORDER BY id LIMIT N
+            models.Index(fields=["thread", "id"], name="chatmsg_thread_id_idx"),
+        ]
+
