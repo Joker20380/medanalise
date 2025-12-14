@@ -1,0 +1,531 @@
+/* ============================================================
+   БЛОК ФИЛЬТРОВ ЛАБОРАТОРИИ
+   ============================================================ */
+
+.lab-filters .card-body {
+  padding: 1rem;
+}
+
+.lab-filters .input-group .form-control {
+  border-left: 0;
+}
+
+.lab-filters .input-group .input-group-text {
+  border-right: 0;
+  background: #fff;
+}
+
+.lab-filters .badge {
+  border-radius: .5rem;
+}
+
+/* Список категорий */
+
+.lab-cat-list .list-group-item {
+  padding: .55rem .75rem;
+  border-left: 0;
+  border-right: 0;
+}
+
+.lab-cat-list .list-group-item:first-child {
+  border-top: 0;
+}
+
+.lab-cat-list .list-group-item.active {
+  background-color: #136bad;
+  color: #fff;
+  border-color: #136bad;
+}
+
+.lab-cat-list .list-group-item.active .badge {
+  background: rgba(255,255,255,.15);
+  color: #fff;
+  border-color: transparent;
+}
+
+.lab-cat-list .text-truncate {
+  max-width: 12rem;
+}
+
+/* Сдвигаем sticky поверх фоновых секций */
+
+@media (min-width: 992px) {
+  .sticky-top {
+    z-index: 1010;
+  }
+}
+
+/* Сеточный режим карточки */
+
+.lab-panel--grid .vertical-divider {
+  display: none !important;
+}
+
+.lab-panel--grid .card-inner {
+  grid-template-columns: 1fr !important;
+  padding: .5rem 0 !important;
+}
+
+.lab-panel--grid .price-col {
+  width: 100% !important;
+  background: none !important;
+  padding: .5rem 0 !important;
+  justify-content: flex-start !important;
+  text-align: left !important;
+}
+
+.lab-panel--grid .horizontal-divider {
+  left: 0;
+  right: 0;
+}
+
+/* На совсем узких экранах можно дать больше ширины */
+
+@media (max-width: 575.98px) {
+  .lab-filters .chip .chip-text {
+    max-width: 100%;
+  }
+}
+
+/* Не допускаем горизонтального скролла у карточки фильтров */
+
+.lab-filters .card-body {
+  overflow: hidden;
+}
+
+/* Активные фильтры-чипсы: не вылазят из карточки */
+
+.active-filters {
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.active-filters .badge {
+  border-radius: .5rem;
+  max-width: 100%;
+}
+
+.active-filters .chip-text {
+  display: inline-block;
+  max-width: 14rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 575.98px){
+  .active-filters .chip-text {
+    max-width: 100%;
+  }
+}
+
+
+/* ============================================================
+   ВЕРХНЯЯ ПОЛОСА: СЕЛЕКТОР ОФИСОВ
+   ============================================================ */
+
+.bg-black.top .office-select {
+  background-color: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 4px;
+  color: #fff;
+  height: 22px;
+  font-size: 13px;
+  line-height: 1;
+  padding: 0 18px 0 6px;
+  appearance: none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, #ffffff90 50%),
+    linear-gradient(135deg, #ffffff90 50%, transparent 50%);
+  background-position:
+    calc(100% - 10px) 8px,
+    calc(100% - 5px) 8px;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+}
+
+.bg-black.top .office-select:hover,
+.bg-black.top .office-select:focus {
+  border-color: #F96D00;
+  background-color: rgba(255,255,255,0.12);
+  outline: none;
+}
+
+.bg-black.top .office-select option {
+  background-color: #111;
+  color: #fff;
+}
+
+.bg-black.top .d-flex.align-items-center select.office-select {
+  flex-shrink: 0;
+  align-self: center;
+}
+
+@media (max-width: 767.98px) {
+  .bg-black.top .office-select {
+    height: 26px;
+    font-size: 12px;
+  }
+}
+
+
+/* =========================================================
+   CHAT WIDGET — CORPORATE GLASS (#116cb3)
+   MATCHES CURRENT BASE MARKUP — FIXED BADGE POSITION
+   ========================================================= */
+
+:root{
+  --cw-z: 2147483000;
+  --cw-radius: 18px;
+
+  --brand: #116cb3;
+  --brand-hover: #0f5fa0;
+
+  --cw-border: rgba(255,255,255,.22);
+  --cw-glass: rgba(255,255,255,.10);
+  --cw-brand-glass: rgba(17,108,179,.18);
+
+  --cw-shadow: 0 18px 60px rgba(0,0,0,.22);
+
+  --cw-text: rgba(20,24,32,.92);
+}
+
+/* SAFETY */
+#chat-widget,
+#chat-widget *{
+  box-sizing: border-box;
+}
+
+/* Root */
+#chat-widget{
+  position: fixed;
+  right: max(16px, env(safe-area-inset-right));
+  bottom: max(16px, env(safe-area-inset-bottom));
+  z-index: var(--cw-z);
+
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  color: var(--cw-text);
+  pointer-events: auto;
+}
+
+/* FAB */
+#chat-fab{
+  position: relative; /* anchor for badge */
+  width: 56px;
+  height: 56px;
+  border-radius: 999px;
+  cursor: pointer;
+
+  background: linear-gradient(135deg, var(--brand), rgba(17,108,179,.88));
+  color: #fff;
+
+  border: 1px solid rgba(255,255,255,.35);
+  box-shadow: var(--cw-shadow);
+
+  display: grid;
+  place-items: center;
+
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* FIX: badge must be top-right of FAB (never bottom-center) */
+#chat-fab .chat-fab-badge{
+  position: absolute;
+  top: -6px;
+  right: -6px;
+
+  min-width: 18px;
+  height: 18px;
+  padding: 0 6px;
+
+  display: flex;              /* perfect centering */
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+
+  background: rgba(220,60,60,.95);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,.35);
+  box-shadow: 0 6px 16px rgba(0,0,0,.35);
+
+  pointer-events: none;
+  z-index: 3;
+}
+
+/* Panel */
+#chat-widget .chat-panel{
+  position: absolute;
+  right: 0;
+  bottom: 72px;
+
+  width: min(360px, calc(100vw - 24px));
+  height: min(520px, calc(100vh - 140px));
+
+  border-radius: var(--cw-radius);
+  border: 1px solid var(--cw-border);
+
+  background: linear-gradient(180deg, var(--cw-brand-glass), var(--cw-glass));
+  backdrop-filter: blur(18px) saturate(155%);
+  -webkit-backdrop-filter: blur(18px) saturate(155%);
+  box-shadow: var(--cw-shadow);
+
+  overflow: hidden;
+
+  /* grid по реальным блокам (header + body) */
+  display: grid;
+  grid-template-rows: 54px minmax(0, 1fr);
+
+  opacity: 0;
+  transform: translateY(10px) scale(.98);
+  pointer-events: none;
+  transition: opacity .18s ease, transform .18s ease;
+}
+
+#chat-widget .chat-panel.open{
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+/* Header: В ТВОЕЙ РАЗМЕТКЕ .chat-widget-header */
+#chat-widget .chat-widget-header{
+  grid-row: 1;
+
+  height: 54px;
+  min-height: 54px;
+  padding: 0 12px 0 14px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  background: var(--brand);
+  color: #fff;
+
+  border-bottom: 1px solid rgba(255,255,255,.25);
+
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+#chat-widget .chat-widget-header span{
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: .2px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  color: #fff;
+}
+
+/* Close / collapse button: показываем (если хочешь прятать — см. блок ниже) */
+#chat-widget .chat-widget-toggle{
+  display: inline-flex;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid rgba(255,255,255,.30);
+  background: rgba(255,255,255,.12);
+  color: #fff;
+  cursor: pointer;
+
+  line-height: 1;
+  font-size: 18px;
+  padding: 0;
+}
+
+#chat-widget .chat-widget-toggle:hover{
+  background: rgba(255,255,255,.18);
+}
+
+/* Body: .chat-widget-body содержит messages + form */
+#chat-widget .chat-widget-body{
+  grid-row: 2;
+
+  display: flex;
+  flex-direction: column;
+
+  min-height: 0; /* критично */
+  overflow: hidden;
+
+  padding: 0;
+}
+
+/* Messages area */
+#chat-widget #chat-messages.chat-messages{
+  flex: 1 1 auto;
+  min-height: 0;
+
+  padding: 14px 12px;
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  background: transparent !important;
+
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Scrollbar */
+#chat-messages::-webkit-scrollbar{ width: 10px; }
+#chat-messages::-webkit-scrollbar-thumb{
+  background: rgba(0,0,0,.18);
+  border-radius: 999px;
+  border: 3px solid transparent;
+  background-clip: padding-box;
+}
+
+/* Message bubbles */
+.chat-msg{
+  display: flex;
+  margin: 6px 0;
+}
+
+.chat-msg__bubble{
+  max-width: 82%;
+  padding: 10px 12px;
+  border-radius: 14px;
+  font-size: 14px;
+  line-height: 1.35;
+
+  background: rgba(255,255,255,.16);
+  border: 1px solid rgba(255,255,255,.22);
+  box-shadow: 0 10px 30px rgba(0,0,0,.10);
+}
+
+.chat-msg--visitor{ justify-content: flex-end; }
+.chat-msg--visitor .chat-msg__bubble{ background: rgba(255,255,255,.26); }
+
+.chat-msg--operator{ justify-content: flex-start; }
+.chat-msg--operator .chat-msg__bubble{ background: rgba(255,255,255,.18); }
+
+/* Form */
+#chat-widget #chat-form.chat-form{
+  flex: 0 0 auto;
+
+  padding: 10px 12px 12px;
+  border-top: 1px solid rgba(255,255,255,.18);
+  background: transparent;
+
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* textarea */
+#chat-widget #chat-input{
+  width: 100%;
+  min-height: 42px;
+  max-height: 110px;
+  resize: none;
+
+  padding: 11px 12px;
+  border-radius: 14px;
+
+  background: rgba(255,255,255,.22);
+  border: 1px solid rgba(255,255,255,.24);
+
+  color: var(--cw-text);
+  font-size: 14px;
+  line-height: 20px;
+  outline: none;
+}
+
+#chat-widget #chat-input::placeholder{
+  color: rgba(20,24,32,.55);
+}
+
+#chat-widget #chat-input:focus{
+  border-color: rgba(255,255,255,.36);
+  box-shadow: 0 0 0 4px rgba(255,255,255,.10);
+}
+
+/* send button */
+#chat-widget .chat-send-btn{
+  width: 100% !important;
+  height: 42px;
+
+  border-radius: 14px;
+  border: 0 !important;
+
+  background: var(--brand) !important;
+  color: #fff !important;
+  font-weight: 600;
+
+  margin-top: 0 !important;
+}
+
+#chat-widget .chat-send-btn:hover{
+  background: var(--brand-hover) !important;
+}
+
+/* Mobile */
+@media (max-width: 480px){
+  #chat-widget{
+    right: max(10px, env(safe-area-inset-right));
+    bottom: max(10px, env(safe-area-inset-bottom));
+  }
+
+  #chat-widget .chat-panel{
+    width: calc(100vw - 20px);
+    height: min(72vh, 560px);
+    bottom: 68px;
+    border-radius: 16px;
+  }
+}
+
+/* Fallback: no backdrop-filter */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))){
+  #chat-widget .chat-panel{
+    background: rgba(255,255,255,.96);
+  }
+}
+
+/* Автор */
+#chat-widget .chat-msg__author{
+  font-size: 10.5px;
+  font-weight: 650;
+  opacity: .72;
+  letter-spacing: .2px;
+  line-height: 1.15;
+}
+
+/* =========================================================
+   DECISION: HIDE CLOSE BUTTON IN HEADER
+   (оставь этот блок, если крестик НЕ нужен)
+   ========================================================= */
+#chat-widget .chat-widget-toggle{
+  display: none !important;
+}
+
+/* ===== System messages (center + tones) ===== */
+.chat-msg--system{ justify-content: center; }
+.chat-msg--system .chat-msg__bubble{ max-width: 90%; }
+
+.chat-msg--info .chat-msg__bubble{
+  background: rgba(80,140,255,.18);
+  border-color: rgba(80,140,255,.35);
+}
+.chat-msg--success .chat-msg__bubble{
+  background: rgba(80,200,120,.22);
+  border-color: rgba(80,200,120,.45);
+}
+.chat-msg--warning .chat-msg__bubble{
+  background: rgba(255,180,70,.24);
+  border-color: rgba(255,180,70,.45);
+}
+.chat-msg--error .chat-msg__bubble{
+  background: rgba(220,80,80,.26);
+  border-color: rgba(220,80,80,.50);
+}
