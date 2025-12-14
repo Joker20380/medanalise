@@ -1,0 +1,9 @@
+{% if not request.COOKIES.cookies_accepted %}
+<div id="cookie-banner">
+  <span>
+    Мы используем cookies для улучшения работы сайта.
+    Подробнее в <a href="{% url 'conf' %}">политике конфиденциальности</a>.
+  </span>
+  <button id="accept-cookies" type="button">Принять</button>
+</div>
+{% endif %}

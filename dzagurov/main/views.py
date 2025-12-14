@@ -3,10 +3,14 @@ from django.db.models import Count, Q, Prefetch
 from django.urls import reverse
 from django.urls.exceptions import NoReverseMatch
 from django.views.generic import ListView, TemplateView
-from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
 from django.http import JsonResponse, Http404
+
+from django.contrib import messages as dj_messages
+from chat.utils import push_chat_system_message
+
+
 from .forms import SubscriberForm, UnsubscriberForm
 from .models import (
     News,
@@ -266,7 +270,7 @@ def Subscribe(request):
         form = SubscriberForm(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, 'Вы успешно подписались на рассылку!')
+            push_chat_system_message(request, 'Вы успешно подписались на рассылку!', level=dj_messages.SUCCESS)
             return redirect('index')
     else:
         form = SubscriberForm()
@@ -294,9 +298,9 @@ def Unsubscribe(request):
                     [email],
                     fail_silently=False,
                 )
-                messages.success(request, 'На ваш email отправлено письмо с подтверждением отписки.')
+                push_chat_system_message(request, 'На ваш email отправлено письмо с подтверждением отписки.', level=dj_messages.SUCCESS)
             except Subscriber.DoesNotExist:
-                messages.error(request, 'Подписка с таким email не найдена.')
+                push_chat_system_message(request, 'Подписка с таким email не найдена.', level=dj_messages.ERROR)
             return redirect('unsubscribe_request')
     else:
         form = UnsubscriberForm()
@@ -308,7 +312,7 @@ def Unsubscribe_confirm(request, token):
     subscriber.is_active = False
     subscriber.unsubscribe_token = None
     subscriber.save()
-    messages.success(request, 'Вы успешно отписались от рассылки.')
+    push_chat_system_message(request, 'Вы успешно отписались от рассылки.', level=dj_messages.SUCCESS)
     return render(request, 'dzagurov/unsubscribe_success.html')
 
 
@@ -396,7 +400,7 @@ class ContactsView(TemplateView):
         contact_id = request.POST.get('contact')
 
         if not all([name, email, message]):
-            messages.error(request, 'Пожалуйста, заполните все обязательные поля')
+            push_chat_system_message(request, 'Пожалуйста, заполните все обязательные поля', level=dj_messages.ERROR)
             return self.get(request, *args, **kwargs)
 
         contact = None
@@ -414,7 +418,7 @@ class ContactsView(TemplateView):
             contact=contact
         )
 
-        messages.success(request, 'Ваше сообщение успешно отправлено!')
+        push_chat_system_message(request, 'Ваше сообщение успешно отправлено!', level=dj_messages.SUCCESS)
         return redirect('contacts')
 
 

@@ -9,6 +9,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
     <link href="https://fonts.googleapis.com/css?family=Poppins:100,200,300,400,500,600,700,800,900" rel="stylesheet">
+
     <link rel="stylesheet" href="{% static 'css/open-iconic-bootstrap.min.css' %}">
     <link rel="stylesheet" href="{% static 'css/animate.css' %}">
     <link rel="stylesheet" href="{% static 'css/owl.carousel.min.css' %}">
@@ -20,10 +21,15 @@
     <link rel="stylesheet" href="{% static 'css/icomoon.css' %}">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <link rel="stylesheet" href="{% static 'css/custom_style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/signup_modal_glass.css' %}">
+
+    <!-- Cookie banner (corporate glass) -->
+    <link rel="stylesheet" href="{% static 'css/cookie_banner.css' %}">
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   </head>
 
-  <body data-spy="scroll" data-target=".site-navbar-target" data-offset="300">
+  <body>
 
     {% if not user.is_authenticated %}
     <div class="modal fade" id="signupChoiceModal" tabindex="-1" role="dialog" aria-hidden="true">
@@ -38,9 +44,10 @@
           </div>
 
           <div class="modal-body">
+
             {% if SOCIALACCOUNT_ENABLED %}
               <p class="mb-2 text-muted">
-                Выберите удобный способ регистрации через соцсети:
+                Выберите удобный способ входа или регистрации:
               </p>
 
               <div class="mb-3">
@@ -51,17 +58,70 @@
             {% endif %}
 
             <p class="mb-2 text-muted">
-              Или создайте аккаунт с помощью e-mail:
+              Или используйте e-mail:
             </p>
-            <a href="{% url 'account_signup' %}" class="btn btn-outline-primary btn-block">
-              Регистрация по e-mail
-            </a>
+
+            <div class="d-flex flex-column gap-2">
+              <a href="{% url 'account_signup' %}" class="btn btn-outline-primary btn-block">
+                Зарегистрироваться по e-mail
+              </a>
+
+              {# ВАЖНО: не уводим на страницу логина, открываем loginModal #}
+              <a href="{% url 'account_login' %}"
+                 class="btn btn-outline-secondary btn-block"
+                 data-auth-modal="login"
+                 data-dismiss="modal">
+                Войти
+              </a>
+            </div>
+
           </div>
 
         </div>
       </div>
     </div>
     {% endif %}
+
+    {% if not user.is_authenticated %}
+    <div class="modal fade" id="loginModal" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Войти</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Закрыть">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="auth-glass auth-glass--login"></div>
+          </div>
+
+          <div class="modal-footer" style="display:none;"></div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    {% if user.is_authenticated %}
+    <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Выйти</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Закрыть">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="auth-glass auth-glass--logout"></div>
+          </div>
+
+          <div class="modal-footer" style="display:none;"></div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
 
     <!-- TOP BAR -->
     <div class="py-1 bg-black top">
@@ -108,7 +168,9 @@
           {% if request.user.is_authenticated %}
           <div class="d-flex align-items-center">
             <a href="#" class="text-white mr-3">{{ user.username }}</a>
-            <a href="{% url 'account_logout' %}" class="text-white">Выйти</a>
+
+            {# ВАЖНО: logout через модалку #}
+            <a href="{% url 'account_logout' %}" class="text-white" data-auth-modal="logout">Выйти</a>
           </div>
           {% else %}
           <div class="d-flex align-items-center">
@@ -116,7 +178,9 @@
               <a href="#" class="text-white" data-toggle="modal" data-target="#signupChoiceModal">
                 Регистрация
               </a>
-              <a href="{% url 'account_login' %}" class="text-white">Войти</a>
+
+              {# ВАЖНО: login через модалку #}
+              <a href="{% url 'account_login' %}" class="text-white" data-auth-modal="login">Войти</a>
             </p>
           </div>
           {% endif %}
@@ -207,9 +271,9 @@
               <h2 class="ftco-heading-2">Услуги</h2>
               <ul class="list-unstyled">
                 <li><a href="#"><span class="icon-long-arrow-right mr-2"></span>Срочные анализы</a></li>
-                <li><a href="#"><span class="icon-long-arrow-right mr-2"></span>Квалифицированные доктора</a></li>
-                <li><a href="#"><span class="icon-long-arrow-right mr-2"></span>Выездное обслуживание</a></li>
-                <li><a href="#"><span class="icon-long-arrow-right mr-2"></span>Поддержка 24 часа</a></li>
+                <li><a href="#"><span class="icon-long-arrow-right mr-2"></span>Квалифицированные доктора</span></a></li>
+                <li><a href="#"><span class="icon-long-arrow-right mr-2"></span>Выездное обслуживание</span></a></li>
+                <li><a href="#"><span class="icon-long-arrow-right mr-2"></span>Поддержка 24 часа</span></a></li>
               </ul>
             </div>
           </div>
@@ -263,6 +327,7 @@
     <script src="{% static 'js/scrollax.min.js' %}"></script>
     <script src="{% static 'js/main.js' %}"></script>
 
+    <!-- Office switcher script -->
     <script>
       (function() {
         const urlTemplate = "{% url 'contact_summary' 0 %}";
@@ -321,24 +386,35 @@
       })();
     </script>
 
-    {% include 'includes/cookie_notice.html' %}
+    <!-- COOKIE BANNER -->
+    {% include 'includes/cookie_banner.html' %}
+    <script src="{% static 'js/cookie_banner.js' %}"></script>
+
+    {# ВАЖНО: auth modal loader (login/logout in glass modals) #}
+    <script src="{% static 'js/auth_modals.js' %}"></script>
 
     <!-- PORTAL ROOT: всегда в конце body -->
     <div id="chat-widget-root">
-      {% if user.is_authenticated %}
+
+      <!-- CHAT WIDGET: виден всем -->
       <div id="chat-widget"
            class="chat-widget chat-collapsed"
+           {% if user.is_authenticated %}
+           data-auth="1"
            data-bootstrap-url="{% url 'chat:chat_api_bootstrap' %}"
            data-messages-url="{% url 'chat:chat_api_messages' %}"
-           data-send-url="{% url 'chat:chat_api_send' %}">
+           data-send-url="{% url 'chat:chat_api_send' %}"
+           {% else %}
+           data-auth="0"
+           {% endif %}>
 
-        <!-- Круглая кнопка (FAB) -->
+        <!-- FAB -->
         <button type="button"
                 id="chat-fab"
                 class="chat-fab"
                 aria-label="Онлайн-чат">💬</button>
 
-        <!-- Стеклянная панель чата -->
+        <!-- Panel -->
         <div class="chat-panel">
           <div class="chat-widget-header">
             <span>Ассистент</span>
@@ -364,9 +440,8 @@
         </div>
       </div>
 
-      <!-- JS логика чат-виджета -->
+      <!-- chat widget JS -->
       <script src="{% static 'js/chat_widget.js' %}"></script>
-      {% endif %}
     </div>
 
   </body>

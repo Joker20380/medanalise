@@ -6,6 +6,13 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_POST
 from django.views.decorators.cache import never_cache
 
+import time
+
+
+
+from .models import ChatMessage
+from .views import _get_or_create_thread
+
 from .models import ChatThread, ChatMessage
 
 
@@ -58,61 +65,57 @@ def bootstrap(request):
 @never_cache
 def chat_api_messages(request):
     """
-    GET /chat/api/messages/?after_id=123
-    - Если after_id задан: вернуть только сообщения с id > after_id
-    - Если after_id не задан: вернуть последние N (для первого открытия/фоллбэка)
+    GET /chat/api/messages/?after_id=123&timeout=20
+
+    Long-poll:
+    - если есть новые сообщения -> отдаём сразу
+    - если нет -> ждём до timeout секунд, проверяя раз в ~0.8s
     """
     thread = _get_or_create_thread(request)
 
-    after_id_raw = request.GET.get("after_id")
     try:
-        after_id = int(after_id_raw) if after_id_raw is not None else None
-    except (TypeError, ValueError):
-        after_id = None
+        after_id = int(request.GET.get("after_id") or 0)
+    except ValueError:
+        after_id = 0
 
-    LIMIT = 50  # под UX и экономию CPU/DB
+    try:
+        timeout = int(request.GET.get("timeout") or 20)
+    except ValueError:
+        timeout = 20
 
-    qs = thread.messages.all()
+    timeout = max(1, min(timeout, 25))  # держим коротко, чтобы не убивать воркеры
+    deadline = time.monotonic() + timeout
 
-    # Важно: id — лучше ключ для инкрементальной выборки
-    if after_id is not None:
-        qs = qs.filter(id__gt=after_id).order_by("id")[:LIMIT]
-    else:
-        # Если фронт открылся и lastMessageId неизвестен — не отдаём всю историю
-        # отдаём последние LIMIT, но в правильном порядке
-        qs = qs.order_by("-id")[:LIMIT]
-        qs = reversed(list(qs))  # чтобы вернуть по возрастанию id
+    def fetch_new():
+        qs = (
+            thread.messages
+            .filter(id__gt=after_id)
+            .order_by("id")[:50]  # страховка
+        )
+        return list(qs)
 
-        data = {
-            "thread_uuid": str(thread.uuid),
-            "messages": [
-                {
-                    "id": m.id,
-                    "sender": m.sender,
-                    "text": m.text,
-                    "created_at": m.created_at.isoformat(),
-                }
-                for m in qs
-            ],
-        }
-        return JsonResponse(data)
+    messages = fetch_new()
 
-    # Оптимизация сериализации: values() (меньше накладных расходов ORM)
-    rows = list(qs.values("id", "sender", "text", "created_at"))
+    # long-poll ожидание
+    while not messages and time.monotonic() < deadline:
+        time.sleep(0.8)
+        messages = fetch_new()
 
     data = {
-        "thread_uuid": str(thread.uuid),
+        "thread_id": thread.id,  # или uuid, как у тебя
         "messages": [
             {
-                "id": r["id"],
-                "sender": r["sender"],
-                "text": r["text"],
-                "created_at": r["created_at"].isoformat(),
+                "id": m.id,
+                "role": "user" if m.sender == "visitor" else "assistant",
+                "content": m.text,
+                "created_at": m.created_at.isoformat(),
             }
-            for r in rows
+            for m in messages
         ],
+        "server_time": time.time(),
     }
     return JsonResponse(data)
+
 
 
 

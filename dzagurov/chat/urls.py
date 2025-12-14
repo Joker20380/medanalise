@@ -9,4 +9,5 @@ urlpatterns = [
     path("api/messages/", views_api.chat_messages, name="chat_api_messages"),
     path("api/send/",     views_api.chat_send,      name="chat_api_send"),
     path("vk/callback/",  views_vk.vk_callback,     name="vk_callback"),
+    path("api/system/", views_api.chat_system_poll, name="system_poll"),
 ]
