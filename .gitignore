@@ -9,9 +9,8 @@ __pycache__/
 *.sqlite3
 
 # --- Django ---
-static/
-media/
 staticfiles/
+media/
 logs/
 *.log
 
@@ -39,9 +38,3 @@ Thumbs.db
 *.swp
 *.tmp
 *.bak
-
-# --- JetBrains / PyCharm ---
-.idea/
-*.ipr
-*.iws
-*.iml
