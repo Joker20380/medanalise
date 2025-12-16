@@ -3,14 +3,13 @@
 {% load i18n %}
 {% load allauth account %}
 
-{% block title %}{% trans "Sign In" %}{% endblock %}
+{% block title %}{% endblock %}
 
 {% block content %}
 {% if request.GET.modal == "1" %}
   <div id="auth-modal-inner" class="auth-glass auth-glass--login">
 
     <div class="auth-glass-head">
-      <div class="auth-glass-title">Войти</div>
       <div class="auth-glass-sub">Войдите, чтобы писать в чат и пользоваться сервисами</div>
     </div>
 

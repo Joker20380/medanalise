@@ -1,93 +1,50 @@
-/* chat_widget.js — Glass chat widget (AUTH + GUEST MODE)
- *
- * AUTH:
- *  - Bootstrap: GET /chat/api/bootstrap/
- *  - Messages (heavy long-poll only when chat open): GET /chat/api/messages/?after_id=...&timeout=20
- *  - System (light long-poll even when closed): GET /chat/api/system/?timeout=20 -> {count:N}
- *  - Send: POST /chat/api/send/
- *
- * GUEST:
- *  - Chat UI is visible, but sending is blocked
- *  - On open / focus / submit -> opens #signupChoiceModal (Bootstrap modal)
- */
+/* =========================================================
+   CHAT WIDGET — FINAL STABLE (guest-safe) + SEND FALLBACK + TIME
+   ========================================================= */
 
 (() => {
-  // ---------------------------
-  // DOM
-  // ---------------------------
   const root = document.getElementById("chat-widget");
-  const fab = document.getElementById("chat-fab");
-  const panel = root ? root.querySelector(".chat-panel") : null;
-  const messagesEl = document.getElementById("chat-messages");
-  const form = document.getElementById("chat-form");
-  const input = document.getElementById("chat-input");
+  if (!root) return;
 
-  if (!root || !fab || !panel || !messagesEl || !form || !input) return;
+  const fab       = document.getElementById("chat-fab");
+  const panel     = root.querySelector(".chat-panel");
+  const messages  = document.getElementById("chat-messages");
+  const form      = document.getElementById("chat-form");
+  const input     = document.getElementById("chat-input");
+  const closeBtn  = root.querySelector(".chat-widget-toggle");
 
-  // ---------------------------
-  // Auth mode (from base.html)
-  // ---------------------------
-  const isAuth = root.getAttribute("data-auth") === "1";
+  if (!fab || !panel || !messages || !form || !input) return;
 
-  // ---------------------------
-  // Config (URLs from data-attrs when auth; fallback defaults)
-  // ---------------------------
   const API = {
-    bootstrap: root.getAttribute("data-bootstrap-url") || "/chat/api/bootstrap/",
-    messages: root.getAttribute("data-messages-url") || "/chat/api/messages/",
-    send: root.getAttribute("data-send-url") || "/chat/api/send/",
-    newThread: "/chat/api/new-thread/",
-    system: "/chat/api/system/",
+    bootstrap: root.dataset.bootstrapUrl || "/chat/api/bootstrap/",
+    messages:  root.dataset.messagesUrl  || "/chat/api/messages/",
+    send:      root.dataset.sendUrl      || "/chat/api/send/",
   };
 
-  const LONGPOLL_TIMEOUT_SEC = 20;
-  const MAX_BACKOFF_MS = 8000;
+  const POLL_TIMEOUT = 20;
 
-  // ---------------------------
-  // State
-  // ---------------------------
+  const isAuthed = () => root.dataset.auth === "1";
+
   let isOpen = false;
   let threadId = null;
-
-  // heavy messages state
   let lastMessageId = 0;
-  let renderedIds = new Set();
-  let lpAbort = null;
-  let lpRunning = false;
-  let lpBackoffMs = 0;
-  let lpTimer = null;
+  let rendered = new Set();
+  let pollAbort = null;
 
-  // system notify state (light poll)
-  let sysAbort = null;
-  let sysRunning = false;
-  let sysBackoffMs = 0;
-  let sysTimer = null;
+  const DRAFT_KEY = "chat_guest_draft";
+  const saveDraft = text => { if (text) localStorage.setItem(DRAFT_KEY, text); };
+  const loadDraft = () => localStorage.getItem(DRAFT_KEY) || "";
+  const clearDraft = () => localStorage.removeItem(DRAFT_KEY);
 
-  // badge state (system-only)
-  let unreadSysCount = 0;
-  let badgeEl = null;
+  const esc = s =>
+    String(s ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
 
-  // ---------------------------
-  // Utils
-  // ---------------------------
-  function log() {
-    // console.log("[chat]", ...arguments);
-  }
-
-  function openSignupModal() {
-    // Bootstrap 4 (jQuery)
-    if (window.jQuery && jQuery.fn && jQuery.fn.modal) {
-      jQuery("#signupChoiceModal").modal("show");
-      return true;
-    }
-    // fallback (если вдруг модалка не подхватилась)
-    const el = document.getElementById("signupChoiceModal");
-    if (el) {
-      el.classList.add("show");
-      el.style.display = "block";
-    }
-    return false;
-  }
+  const scrollBottom = () => { messages.scrollTop = messages.scrollHeight; };
 
   function getCookie(name) {
     const m = document.cookie.match("(^|;)\\s*" + name + "\\s*=\\s*([^;]+)");
@@ -99,178 +56,176 @@
     return token ? { "X-CSRFToken": token } : {};
   }
 
-  function escapeHtml(str) {
-    return String(str)
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
+  function fmtTime(value) {
+    if (!value) return "";
+    let d = null;
+    if (value instanceof Date) d = value;
+    else if (typeof value === "number") d = new Date(value);
+    else if (typeof value === "string") {
+      const t = Date.parse(value);
+      if (!Number.isNaN(t)) d = new Date(t);
+    }
+    if (!d) return "";
+    const hh = String(d.getHours()).padStart(2, "0");
+    const mm = String(d.getMinutes()).padStart(2, "0");
+    return `${hh}:${mm}`;
   }
 
   function mapRoleToSender(role) {
-    if (role === "user") return "visitor";
-    if (role === "assistant") return "operator";
-    if (role === "system") return "system";
-    return "system";
+    const r = (role || "").toString().toLowerCase();
+    if (r === "user") return "visitor";
+    if (r === "assistant") return "operator";
+    if (r === "system") return "system";
+    return "";
   }
 
   function normalizeMessage(m) {
+    if (!m) return null;
+
     const id = Number(m.id ?? m.message_id ?? m.pk ?? 0) || 0;
 
     const role = (m.role ?? "").toString();
     const senderRaw = (m.sender ?? "").toString();
-    const sender = role ? mapRoleToSender(role) : (senderRaw || "system");
+    const sender =
+      (senderRaw && senderRaw.toLowerCase()) ||
+      mapRoleToSender(role) ||
+      "operator"; // важно: не system по умолчанию
 
-    const text = (m.content ?? m.text ?? m.message ?? "").toString();
+    const text = (m.text ?? m.content ?? m.message ?? "").toString();
 
     const author =
-      (m.author ??
-        (sender === "visitor" ? "Пользователь" : sender === "operator" ? "Оператор" : "Система")
-      ).toString();
+      (m.author ?? m.username ?? "").toString() ||
+      (sender === "visitor" ? "Пользователь" :
+       sender === "operator" ? "Оператор" : "Система");
 
-    const createdAt = m.created_at ?? m.createdAt ?? null;
+    const createdAt = m.created_at ?? m.createdAt ?? m.created ?? null;
 
     return { id, sender, text, author, createdAt };
   }
 
-  function scrollToBottom() {
-    messagesEl.scrollTop = messagesEl.scrollHeight;
+  function renderMessage(raw, level = null) {
+    const m = normalizeMessage(raw);
+    if (!m || !m.text) return;
+
+    if (m.id && rendered.has(m.id)) return;
+    if (m.id) rendered.add(m.id);
+    if (m.id > lastMessageId) lastMessageId = m.id;
+
+    const timeStr = fmtTime(m.createdAt);
+
+    const el = document.createElement("div");
+    el.className =
+      `chat-msg chat-msg--${m.sender}` +
+      (level ? ` chat-msg--${level}` : "");
+
+    el.innerHTML = `
+      <div class="chat-msg__bubble">
+        <div class="chat-msg__meta" style="display:flex; align-items:baseline; justify-content:space-between; gap:10px;">
+          <span class="chat-msg__author">${esc(m.author)}</span>
+          ${timeStr ? `<span class="chat-msg__time" style="font-size:10px; font-weight:600; opacity:.6;">${esc(timeStr)}</span>` : ""}
+        </div>
+        <div class="chat-msg__text">${esc(m.text).replace(/\n/g, "<br>")}</div>
+      </div>
+    `;
+
+    messages.appendChild(el);
+    scrollBottom();
   }
 
-  // ---------------------------
-  // Badge (system-only)
-  // ---------------------------
-  function ensureBadge() {
-    if (badgeEl) return badgeEl;
-    badgeEl = document.createElement("span");
-    badgeEl.className = "chat-fab-badge";
-    badgeEl.style.display = "none";
-    fab.appendChild(badgeEl);
-    return badgeEl;
-  }
+  const system = (text, lvl = "info") =>
+    renderMessage({ text, sender: "system", author: "Система" }, lvl);
 
-  function setSysUnread(count) {
-    unreadSysCount = Math.max(0, Number(count || 0));
-    const b = ensureBadge();
+  async function bootstrapChat() {
+    const r = await fetch(API.bootstrap, { credentials: "same-origin", cache: "no-store" });
+    if (!r.ok) throw new Error(`bootstrap ${r.status}`);
+    const d = await r.json();
 
-    if (unreadSysCount > 0 && !isOpen) {
-      b.style.display = "inline-flex";
-      b.textContent = unreadSysCount > 99 ? "99+" : String(unreadSysCount);
-      fab.classList.add("chat-fab--pulse");
-    } else {
-      b.style.display = "none";
-      b.textContent = "";
-      fab.classList.remove("chat-fab--pulse");
-    }
-  }
+    threadId = d.thread_id || d.threadId || null;
 
-  function markSysRead() {
-    setSysUnread(0);
-  }
-
-  // ---------------------------
-  // Render
-  // ---------------------------
-  function clearMessagesUi() {
-    messagesEl.innerHTML = "";
-    renderedIds = new Set();
+    messages.innerHTML = "";
+    rendered.clear();
     lastMessageId = 0;
+
+    (d.messages || []).forEach(m => renderMessage(m));
+    (d.system_messages || []).forEach(m =>
+      system(m.content || m.text || "", (m.level || "info"))
+    );
+
+    scrollBottom();
   }
 
-  function renderSystemLine(text, level) {
-    const lvl = (level || "info").toLowerCase();
+  async function poll() {
+    if (!isOpen || !isAuthed()) return;
 
-    const item = document.createElement("div");
-    item.className = `chat-msg chat-msg--system chat-msg--${lvl}`;
+    pollAbort = new AbortController();
 
-    const safe = escapeHtml(text).replaceAll("\n", "<br>");
+    try {
+      const url = new URL(API.messages, location.origin);
+      url.searchParams.set("after_id", String(lastMessageId || 0));
+      url.searchParams.set("timeout", String(POLL_TIMEOUT));
 
-    item.innerHTML = `
-      <div class="chat-msg__bubble">
-        <div class="chat-msg__author">Система</div>
-        <div class="chat-msg__text">${safe}</div>
-      </div>
-    `;
+      const r = await fetch(url, {
+        credentials: "same-origin",
+        signal: pollAbort.signal,
+        cache: "no-store",
+      });
 
-    messagesEl.appendChild(item);
-    if (isOpen) scrollToBottom();
-  }
+      if (!r.ok) throw new Error(`poll ${r.status}`);
 
-  function renderMessage(msg) {
-    const m = normalizeMessage(msg);
-    if (!m.text) return;
+      const d = await r.json();
+      (d.messages || []).forEach(m => renderMessage(m));
 
-    if (m.id) {
-      if (renderedIds.has(m.id)) return;
-      renderedIds.add(m.id);
-      if (m.id > lastMessageId) lastMessageId = m.id;
+      poll();
+    } catch (_) {
+      // тихо
     }
-
-    const item = document.createElement("div");
-    item.className = `chat-msg chat-msg--${m.sender}`;
-
-    const safeText = escapeHtml(m.text).replaceAll("\n", "<br>");
-    const safeAuthor = escapeHtml(m.author);
-
-    item.innerHTML = `
-      <div class="chat-msg__bubble">
-        <div class="chat-msg__author">${safeAuthor}</div>
-        <div class="chat-msg__text">${safeText}</div>
-      </div>
-    `;
-
-    messagesEl.appendChild(item);
-    if (isOpen) scrollToBottom();
   }
 
-  function renderMessages(list) {
-    if (!Array.isArray(list)) return;
-    for (const m of list) renderMessage(m);
-  }
+  function openChat() {
+    isOpen = true;
+    panel.classList.add("open");
 
-  // ---------------------------
-  // Panel open/close
-  // ---------------------------
-  function setOpen(open) {
-    isOpen = !!open;
-    panel.classList.toggle("open", isOpen);
-    root.classList.toggle("open", isOpen);
+    if (isAuthed()) {
+      bootstrapChat().then(poll).catch(() => {
+        system("Не удалось загрузить чат. Обнови страницу или попробуй позже.", "error");
+      });
 
-    if (isOpen) {
-      markSysRead();
+      const draft = loadDraft();
+      if (draft) {
+        input.value = draft;
+        clearDraft();
+      }
       setTimeout(() => input.focus(), 0);
-      scrollToBottom();
     } else {
-      stopLongPoll();
+      system("Чтобы написать — войдите или зарегистрируйтесь.", "info");
+      setTimeout(() => input.focus(), 0);
     }
   }
 
-  // Close (×) button in header (if visible in CSS)
-  const toggleBtn = root.querySelector(".chat-widget-toggle");
-  if (toggleBtn) {
-    toggleBtn.addEventListener("click", (e) => {
+  function closeChat() {
+    isOpen = false;
+    panel.classList.remove("open");
+    if (pollAbort) {
+      try { pollAbort.abort(); } catch (_) {}
+      pollAbort = null;
+    }
+  }
+
+  fab.onclick = () => (isOpen ? closeChat() : openChat());
+  if (closeBtn) closeBtn.onclick = closeChat;
+
+  // Enter => submit, Shift+Enter => newline
+  input.addEventListener("keydown", e => {
+    if (e.isComposing) return;
+    if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      setOpen(false);
-    });
-  }
+      if (form.requestSubmit) form.requestSubmit();
+      else form.dispatchEvent(new Event("submit", { cancelable: true }));
+    }
+  });
 
-  // ---------------------------
-  // API helpers
-  // ---------------------------
-  async function apiGet(url, signal) {
-    const resp = await fetch(url, {
-      method: "GET",
-      credentials: "same-origin",
-      cache: "no-store",
-      signal,
-    });
-    if (!resp.ok) throw new Error(`GET ${url} -> ${resp.status}`);
-    return resp.json();
-  }
-
-  async function apiPostJson(url, payload) {
-    const resp = await fetch(url, {
+  async function postJsonOrThrow(url, payload) {
+    const r = await fetch(url, {
       method: "POST",
       credentials: "same-origin",
       headers: {
@@ -279,16 +234,23 @@
       },
       body: JSON.stringify(payload || {}),
     });
-    return resp;
+    if (!r.ok) {
+      const txt = await r.text().catch(() => "");
+      const err = new Error(`send(json) ${r.status}`);
+      err.status = r.status;
+      err.body = txt;
+      throw err;
+    }
+    return r.json();
   }
 
-  async function apiPostForm(url, fieldsObj) {
+  async function postFormOrThrow(url, fields) {
     const body = new URLSearchParams();
-    for (const [k, v] of Object.entries(fieldsObj || {})) {
+    Object.entries(fields || {}).forEach(([k, v]) => {
       if (v !== undefined && v !== null) body.set(k, String(v));
-    }
+    });
 
-    const resp = await fetch(url, {
+    const r = await fetch(url, {
       method: "POST",
       credentials: "same-origin",
       headers: {
@@ -297,314 +259,61 @@
       },
       body: body.toString(),
     });
-    return resp;
+
+    if (!r.ok) {
+      const txt = await r.text().catch(() => "");
+      const err = new Error(`send(form) ${r.status}`);
+      err.status = r.status;
+      err.body = txt;
+      throw err;
+    }
+    return r.json();
   }
 
-  // ---------------------------
-  // Bootstrap (AUTH only)
-  // ---------------------------
-  async function bootstrap() {
-    const data = await apiGet(API.bootstrap);
-
-    threadId = data.thread_id ?? data.threadId ?? threadId;
-
-    clearMessagesUi();
-
-    if (Array.isArray(data.messages)) {
-      renderMessages(data.messages);
-    }
-
-    if (Array.isArray(data.system_messages)) {
-      for (const sm of data.system_messages) {
-        const txt = sm.content ?? sm.text ?? "";
-        if (txt) renderSystemLine(txt, sm.level || "");
-      }
-    }
-
-    scrollToBottom();
-    log("bootstrap ok", { threadId, lastMessageId });
-  }
-
-  // ---------------------------
-  // Send message (AUTH only, JSON + fallback)
-  // ---------------------------
-  async function sendMessage(text) {
-    const payload = { text: text, content: text };
-    if (threadId) payload.thread_id = threadId;
-
-    try {
-      const resp = await apiPostJson(API.send, payload);
-
-      if (resp.status === 415 || resp.status === 400) {
-        throw new Error(`JSON not accepted: ${resp.status}`);
-      }
-      if (!resp.ok) throw new Error(`POST ${API.send} -> ${resp.status}`);
-
-      const data = await resp.json();
-      if (data?.system_message) renderSystemLine(data.system_message, "error");
-      if (data?.message) renderMessage(data.message);
-      if (data?.user_message) renderMessage(data.user_message);
-      return data;
-    } catch (e) {
-      const resp2 = await apiPostForm(API.send, {
-        text: text,
-        content: text,
-        thread_id: threadId || "",
-      });
-      if (!resp2.ok) throw new Error(`POST(form) ${API.send} -> ${resp2.status}`);
-
-      const data2 = await resp2.json();
-      if (data2?.system_message) renderSystemLine(data2.system_message, "error");
-      if (data2?.message) renderMessage(data2.message);
-      if (data2?.user_message) renderMessage(data2.user_message);
-      return data2;
-    }
-  }
-
-  // ---------------------------
-  // Heavy long-poll (messages) — AUTH only, only when open
-  // ---------------------------
-  function scheduleNextLongPoll(delayMs) {
-    if (!lpRunning) return;
-    if (lpTimer) clearTimeout(lpTimer);
-    lpTimer = setTimeout(() => {
-      if (!lpRunning || document.hidden || !isOpen) return;
-      longPollOnce();
-    }, Math.max(0, delayMs || 0));
-  }
-
-  async function longPollOnce() {
-    if (!lpRunning || document.hidden || !isOpen) return;
-
-    if (lpAbort) {
-      try { lpAbort.abort(); } catch (_) {}
-    }
-    lpAbort = new AbortController();
-
-    try {
-      const url = new URL(API.messages, window.location.origin);
-      url.searchParams.set("after_id", String(lastMessageId || 0));
-      url.searchParams.set("timeout", String(LONGPOLL_TIMEOUT_SEC));
-
-      const data = await apiGet(url.toString(), lpAbort.signal);
-
-      lpBackoffMs = 0;
-
-      if (data && Array.isArray(data.messages) && data.messages.length) {
-        renderMessages(data.messages);
-      }
-
-      scheduleNextLongPoll(0);
-    } catch (err) {
-      if (err && (err.name === "AbortError" || String(err).includes("AbortError"))) return;
-      lpBackoffMs = Math.min(lpBackoffMs ? lpBackoffMs * 2 : 500, MAX_BACKOFF_MS);
-      scheduleNextLongPoll(lpBackoffMs);
-    }
-  }
-
-  function startLongPoll() {
-    if (!isAuth) return;
-    if (lpRunning) return;
-    lpRunning = true;
-    lpBackoffMs = 0;
-    scheduleNextLongPoll(0);
-    log("LP (messages) start");
-  }
-
-  function stopLongPoll() {
-    lpRunning = false;
-    if (lpTimer) { clearTimeout(lpTimer); lpTimer = null; }
-    if (lpAbort) { try { lpAbort.abort(); } catch (_) {} lpAbort = null; }
-    log("LP (messages) stop");
-  }
-
-  // ---------------------------
-  // Light long-poll (system count) — AUTH only, always when visible
-  // ---------------------------
-  function scheduleNextSysPoll(delayMs) {
-    if (!sysRunning) return;
-    if (sysTimer) clearTimeout(sysTimer);
-    sysTimer = setTimeout(() => {
-      if (!sysRunning || document.hidden) return;
-      sysPollOnce();
-    }, Math.max(0, delayMs || 0));
-  }
-
-  async function sysPollOnce() {
-    if (!sysRunning || document.hidden) return;
-
-    if (sysAbort) {
-      try { sysAbort.abort(); } catch (_) {}
-    }
-    sysAbort = new AbortController();
-
-    try {
-      const url = new URL(API.system, window.location.origin);
-      url.searchParams.set("timeout", String(LONGPOLL_TIMEOUT_SEC));
-
-      const data = await apiGet(url.toString(), sysAbort.signal);
-
-      sysBackoffMs = 0;
-
-      const cnt = Number(data?.count || 0) || 0;
-
-      if (!isOpen && cnt > 0) {
-        setSysUnread(cnt);
-      }
-
-      scheduleNextSysPoll(0);
-    } catch (err) {
-      if (err && (err.name === "AbortError" || String(err).includes("AbortError"))) return;
-      sysBackoffMs = Math.min(sysBackoffMs ? sysBackoffMs * 2 : 500, MAX_BACKOFF_MS);
-      scheduleNextSysPoll(sysBackoffMs);
-    }
-  }
-
-  function startSystemPoll() {
-    if (!isAuth) return;
-    if (sysRunning) return;
-    sysRunning = true;
-    sysBackoffMs = 0;
-    scheduleNextSysPoll(0);
-    log("LP (system) start");
-  }
-
-  function stopSystemPoll() {
-    sysRunning = false;
-    if (sysTimer) { clearTimeout(sysTimer); sysTimer = null; }
-    if (sysAbort) { try { sysAbort.abort(); } catch (_) {} sysAbort = null; }
-    log("LP (system) stop");
-  }
-
-  // ---------------------------
-  // Events
-  // ---------------------------
-  fab.addEventListener("click", async () => {
-    if (!isOpen) {
-      setOpen(true);
-
-      // GUEST MODE
-      if (!isAuth) {
-        clearMessagesUi();
-        renderSystemLine("Чтобы написать в чат, нужно зарегистрироваться или войти.", "info");
-        scrollToBottom();
-        openSignupModal();
-        return;
-      }
-
-      // AUTH MODE
-      try {
-        await bootstrap();
-        if (!document.hidden) startLongPoll();
-      } catch (e) {
-        stopLongPoll();
-        renderSystemLine("Не удалось загрузить чат. Обнови страницу или попробуй позже.", "error");
-        log("bootstrap failed", e);
-      }
-    } else {
-      setOpen(false);
-    }
-  });
-
-  // Enter => send, Shift+Enter => newline
-  input.addEventListener("keydown", (e) => {
-    if (e.isComposing) return;
-
-    if (!isAuth && e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      openSignupModal();
-      return;
-    }
-
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      if (form.requestSubmit) form.requestSubmit();
-      else form.dispatchEvent(new Event("submit", { cancelable: true }));
-    }
-  });
-
-  input.addEventListener("focus", () => {
-    if (!isAuth) {
-      input.blur();
-      openSignupModal();
-      return;
-    }
-    if (isOpen) markSysRead();
-  });
-
-  form.addEventListener("submit", async (e) => {
+  form.addEventListener("submit", async e => {
     e.preventDefault();
 
-    // GUEST MODE: block sending + show signup
-    if (!isAuth) {
-      openSignupModal();
-      renderSystemLine("Сначала зарегистрируйся или войди — затем сможешь отправлять сообщения.", "warning");
+    const raw = input.value || "";
+    const text = raw.trim();
+    if (!text) return;
+
+    if (!isAuthed()) {
+      saveDraft(text);
+      if (window.jQuery && document.getElementById("signupChoiceModal")) {
+        window.jQuery("#signupChoiceModal").modal("show");
+      } else {
+        location.href = "/accounts/login/";
+      }
       return;
     }
-
-    const raw = (input.value || "");
-    const text = raw.trimEnd();
-    if (!text.trim()) return;
 
     input.value = "";
 
+    // payload: поддержим оба ключа (твой бек мог ждать text или content)
+    const payload = { text, content: text };
+    if (threadId) payload.thread_id = threadId;
+
     try {
-      await sendMessage(text);
-      scrollToBottom();
-      if (isOpen && !document.hidden) startLongPoll();
-    } catch (err) {
-      input.value = raw;
-      renderSystemLine("Сообщение не отправлено. Проверь соединение и повтори.", "error");
-      log("send failed", err);
-    }
-  });
-
-  document.addEventListener("visibilitychange", () => {
-    if (!isAuth) return;
-    if (document.hidden) {
-      stopSystemPoll();
-      stopLongPoll();
-    } else {
-      startSystemPoll();
-      if (isOpen) startLongPoll();
-    }
-  });
-
-  window.addEventListener("beforeunload", () => {
-    stopSystemPoll();
-    stopLongPoll();
-  });
-
-  // Optional: кнопка "новый диалог" если есть [data-chat-new-thread] (AUTH only)
-  const newThreadBtn = root.querySelector("[data-chat-new-thread]");
-  if (newThreadBtn) {
-    newThreadBtn.addEventListener("click", async () => {
-      if (!isAuth) {
-        openSignupModal();
-        return;
-      }
+      let d;
       try {
-        const resp = await apiPostJson(API.newThread, {});
-        if (!resp.ok) throw new Error(`POST ${API.newThread} -> ${resp.status}`);
-        const data = await resp.json();
-
-        threadId = data.thread_id ?? data.threadId ?? null;
-
-        clearMessagesUi();
-        if (Array.isArray(data.messages)) renderMessages(data.messages);
-
-        renderSystemLine("Создан новый диалог.", "info");
-        scrollToBottom();
-      } catch (e) {
-        renderSystemLine("Не удалось создать новый диалог.", "error");
-        log("newThread failed", e);
+        d = await postJsonOrThrow(API.send, payload);
+      } catch (err) {
+        // Если бек не принимает JSON (415/400) или CSRF/прочее — пробуем form
+        console.warn("[chat] json send failed:", err.status, err.body);
+        d = await postFormOrThrow(API.send, payload);
       }
-    });
-  }
 
-  // init
-  setOpen(false);
+      if (d.user_message) renderMessage(d.user_message);
+      else if (d.message) renderMessage(d.message);
+      else if (d.error) system(d.error, "error");
 
-  // Start lightweight system polling immediately (AUTH only)
-  if (isAuth && !document.hidden) startSystemPoll();
+      (d.system_messages || []).forEach(m =>
+        system(m.content || m.text || "", (m.level || "info"))
+      );
+    } catch (err2) {
+      console.error("[chat] send failed окончательно:", err2.status, err2.body);
+      system("Сообщение не отправлено", "error");
+      input.value = raw; // вернуть текст, чтобы не потерять
+    }
+  });
 })();

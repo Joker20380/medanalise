@@ -173,7 +173,7 @@
 
 /* =========================================================
    CHAT WIDGET — CORPORATE GLASS (#116cb3)
-   MATCHES CURRENT BASE MARKUP — FIXED BADGE POSITION
+   Bootstrap-safe, Mobile-safe
    ========================================================= */
 
 :root{
@@ -188,17 +188,18 @@
   --cw-brand-glass: rgba(17,108,179,.18);
 
   --cw-shadow: 0 18px 60px rgba(0,0,0,.22);
-
   --cw-text: rgba(20,24,32,.92);
 }
 
-/* SAFETY */
+/* ================= SAFETY ================= */
+
 #chat-widget,
 #chat-widget *{
   box-sizing: border-box;
 }
 
-/* Root */
+/* ================= ROOT ================= */
+
 #chat-widget{
   position: fixed;
   right: max(16px, env(safe-area-inset-right));
@@ -210,9 +211,10 @@
   pointer-events: auto;
 }
 
-/* FAB */
+/* ================= FAB ================= */
+
 #chat-fab{
-  position: relative; /* anchor for badge */
+  position: relative;
   width: 56px;
   height: 56px;
   border-radius: 999px;
@@ -231,35 +233,52 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-/* FIX: badge must be top-right of FAB (never bottom-center) */
+/* Badge */
+
 #chat-fab .chat-fab-badge{
   position: absolute;
   top: -6px;
   right: -6px;
 
-  min-width: 18px;
-  height: 18px;
+  min-width: 20px;
+  height: 20px;
   padding: 0 6px;
 
-  display: flex;              /* perfect centering */
+  border-radius: 999px;
+  background: #ff3b30;
+  color: #fff;
+
+  display: inline-flex;
   align-items: center;
   justify-content: center;
 
-  border-radius: 999px;
   font-size: 11px;
   font-weight: 700;
   line-height: 1;
 
-  background: rgba(220,60,60,.95);
-  color: #fff;
+  box-shadow: 0 10px 26px rgba(0,0,0,.25);
   border: 1px solid rgba(255,255,255,.35);
-  box-shadow: 0 6px 16px rgba(0,0,0,.35);
-
-  pointer-events: none;
-  z-index: 3;
 }
 
-/* Panel */
+/* Pulse */
+
+#chat-fab.chat-fab--pulse::after{
+  content:"";
+  position:absolute;
+  inset:-6px;
+  border-radius:999px;
+  border:2px solid rgba(17,108,179,.35);
+  animation: cwPulse 1.2s ease-in-out infinite;
+}
+
+@keyframes cwPulse{
+  0%{ transform: scale(.92); opacity:.55; }
+  70%{ transform: scale(1.12); opacity:0; }
+  100%{ transform: scale(1.12); opacity:0; }
+}
+
+/* ================= PANEL ================= */
+
 #chat-widget .chat-panel{
   position: absolute;
   right: 0;
@@ -274,13 +293,12 @@
   background: linear-gradient(180deg, var(--cw-brand-glass), var(--cw-glass));
   backdrop-filter: blur(18px) saturate(155%);
   -webkit-backdrop-filter: blur(18px) saturate(155%);
-  box-shadow: var(--cw-shadow);
 
+  box-shadow: var(--cw-shadow);
   overflow: hidden;
 
-  /* grid по реальным блокам (header + body) */
   display: grid;
-  grid-template-rows: 54px minmax(0, 1fr);
+  grid-template-rows: 54px minmax(0,1fr);
 
   opacity: 0;
   transform: translateY(10px) scale(.98);
@@ -294,12 +312,10 @@
   pointer-events: auto;
 }
 
-/* Header: В ТВОЕЙ РАЗМЕТКЕ .chat-widget-header */
-#chat-widget .chat-widget-header{
-  grid-row: 1;
+/* ================= HEADER ================= */
 
+#chat-widget .chat-widget-header{
   height: 54px;
-  min-height: 54px;
   padding: 0 12px 0 14px;
 
   display: flex;
@@ -310,125 +326,103 @@
   color: #fff;
 
   border-bottom: 1px solid rgba(255,255,255,.25);
-
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
 }
 
 #chat-widget .chat-widget-header span{
   font-size: 14px;
   font-weight: 600;
-  letter-spacing: .2px;
-  line-height: 1;
-  display: flex;
-  align-items: center;
-  color: #fff;
 }
 
-/* Close / collapse button: показываем (если хочешь прятать — см. блок ниже) */
+/* Close */
+
 #chat-widget .chat-widget-toggle{
-  display: inline-flex;
   width: 34px;
   height: 34px;
   border-radius: 10px;
+
+  display: inline-flex;
   align-items: center;
   justify-content: center;
 
   border: 1px solid rgba(255,255,255,.30);
   background: rgba(255,255,255,.12);
   color: #fff;
+
   cursor: pointer;
-
-  line-height: 1;
   font-size: 18px;
-  padding: 0;
 }
 
-#chat-widget .chat-widget-toggle:hover{
-  background: rgba(255,255,255,.18);
-}
+/* ================= BODY ================= */
 
-/* Body: .chat-widget-body содержит messages + form */
 #chat-widget .chat-widget-body{
-  grid-row: 2;
-
   display: flex;
   flex-direction: column;
-
-  min-height: 0; /* критично */
-  overflow: hidden;
-
-  padding: 0;
+  min-height: 0;
 }
 
-/* Messages area */
-#chat-widget #chat-messages.chat-messages{
+/* ================= MESSAGES ================= */
+
+#chat-messages{
   flex: 1 1 auto;
-  min-height: 0;
-
   padding: 14px 12px;
+
   overflow-y: auto;
-  overflow-x: hidden;
-
-  background: transparent !important;
-
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-/* Scrollbar */
-#chat-messages::-webkit-scrollbar{ width: 10px; }
-#chat-messages::-webkit-scrollbar-thumb{
-  background: rgba(0,0,0,.18);
-  border-radius: 999px;
-  border: 3px solid transparent;
-  background-clip: padding-box;
-}
-
-/* Message bubbles */
 .chat-msg{
   display: flex;
-  margin: 6px 0;
 }
 
 .chat-msg__bubble{
   max-width: 82%;
   padding: 10px 12px;
+
   border-radius: 14px;
   font-size: 14px;
   line-height: 1.35;
 
   background: rgba(255,255,255,.16);
   border: 1px solid rgba(255,255,255,.22);
-  box-shadow: 0 10px 30px rgba(0,0,0,.10);
 }
 
 .chat-msg--visitor{ justify-content: flex-end; }
-.chat-msg--visitor .chat-msg__bubble{ background: rgba(255,255,255,.26); }
-
 .chat-msg--operator{ justify-content: flex-start; }
-.chat-msg--operator .chat-msg__bubble{ background: rgba(255,255,255,.18); }
+.chat-msg--system{ justify-content: center; }
 
-/* Form */
-#chat-widget #chat-form.chat-form{
-  flex: 0 0 auto;
+.chat-msg--success .chat-msg__bubble{
+  background: rgba(80,200,120,.14);
+  border-color: rgba(80,200,120,.45);
+}
+.chat-msg--error .chat-msg__bubble{
+  background: rgba(255,90,90,.14);
+  border-color: rgba(255,90,90,.45);
+}
 
+.chat-msg__author{
+  font-size: 10.5px;
+  font-weight: 650;
+  opacity: .72;
+  margin-bottom: 4px;
+}
+
+/* ================= FORM ================= */
+
+#chat-form{
   padding: 10px 12px 12px;
   border-top: 1px solid rgba(255,255,255,.18);
-  background: transparent;
 
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-/* textarea */
-#chat-widget #chat-input{
+#chat-input{
   width: 100%;
   min-height: 42px;
   max-height: 110px;
-  resize: none;
 
   padding: 11px 12px;
   border-radius: 14px;
@@ -436,41 +430,33 @@
   background: rgba(255,255,255,.22);
   border: 1px solid rgba(255,255,255,.24);
 
-  color: var(--cw-text);
   font-size: 14px;
   line-height: 20px;
+  color: var(--cw-text);
+
+  resize: none;
   outline: none;
 }
 
-#chat-widget #chat-input::placeholder{
-  color: rgba(20,24,32,.55);
-}
-
-#chat-widget #chat-input:focus{
+#chat-input:focus{
   border-color: rgba(255,255,255,.36);
   box-shadow: 0 0 0 4px rgba(255,255,255,.10);
 }
 
-/* send button */
-#chat-widget .chat-send-btn{
-  width: 100% !important;
-  height: 42px;
+/* Button */
 
+.chat-send-btn{
+  height: 42px;
   border-radius: 14px;
-  border: 0 !important;
 
   background: var(--brand) !important;
   color: #fff !important;
+  border: 0 !important;
   font-weight: 600;
-
-  margin-top: 0 !important;
 }
 
-#chat-widget .chat-send-btn:hover{
-  background: var(--brand-hover) !important;
-}
+/* ================= MOBILE ================= */
 
-/* Mobile */
 @media (max-width: 480px){
   #chat-widget{
     right: max(10px, env(safe-area-inset-right));
@@ -479,53 +465,77 @@
 
   #chat-widget .chat-panel{
     width: calc(100vw - 20px);
-    height: min(72vh, 560px);
-    bottom: 68px;
-    border-radius: 16px;
+    height: min(75vh, 560px);
+  }
+
+  #chat-input{
+    font-size: 16px; /* iOS no-zoom fix */
   }
 }
 
-/* Fallback: no backdrop-filter */
+/* ================= BOOTSTRAP SAFETY ================= */
+
+/* When any Bootstrap modal is open — chat stays underneath */
+body.modal-open #chat-widget{
+  z-index: 1030 !important;
+}
+
+/* ================= FALLBACK ================= */
+
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))){
   #chat-widget .chat-panel{
     background: rgba(255,255,255,.96);
   }
 }
 
-/* Автор */
-#chat-widget .chat-msg__author{
-  font-size: 10.5px;
-  font-weight: 650;
-  opacity: .72;
-  letter-spacing: .2px;
-  line-height: 1.15;
-}
 
 /* =========================================================
-   DECISION: HIDE CLOSE BUTTON IN HEADER
-   (оставь этот блок, если крестик НЕ нужен)
+   FIX: chat must be below bootstrap modals
    ========================================================= */
-#chat-widget .chat-widget-toggle{
-  display: none !important;
+
+/* Когда открыта bootstrap-модалка */
+body.modal-open #chat-widget {
+  z-index: 1030 !important; /* ниже backdrop(1040) */
 }
 
-/* ===== System messages (center + tones) ===== */
-.chat-msg--system{ justify-content: center; }
-.chat-msg--system .chat-msg__bubble{ max-width: 90%; }
+/* На всякий случай: панель чата */
+body.modal-open #chat-widget .chat-panel {
+  pointer-events: none;
+  opacity: 0.15;
+}
 
-.chat-msg--info .chat-msg__bubble{
-  background: rgba(80,140,255,.18);
-  border-color: rgba(80,140,255,.35);
+body.modal-open #chat-widget{
+  pointer-events: none !important;
 }
-.chat-msg--success .chat-msg__bubble{
-  background: rgba(80,200,120,.22);
-  border-color: rgba(80,200,120,.45);
+
+#chat-widget .chat-msg__meta{
+  display:flex;
+  gap:8px;
+  align-items:baseline;
+  margin-bottom:4px;
 }
-.chat-msg--warning .chat-msg__bubble{
-  background: rgba(255,180,70,.24);
-  border-color: rgba(255,180,70,.45);
+
+#chat-widget .chat-msg__time{
+  margin-left:auto;
+  font-size:10.5px;
+  font-weight:650;
+  opacity:.58;
+  letter-spacing:.2px;
+  line-height:1.15;
 }
-.chat-msg--error .chat-msg__bubble{
-  background: rgba(220,80,80,.26);
-  border-color: rgba(220,80,80,.50);
+
+
+#chat-widget .chat-msg__meta{
+  display:flex;
+  gap:8px;
+  align-items:baseline;
+  margin-bottom:4px;
+}
+#chat-widget .chat-msg__time{
+  margin-left:auto;
+  font-size:10.5px;
+  font-weight:650;
+  opacity:.58;
+  letter-spacing:.2px;
+  line-height:1.15;
 }
