@@ -1,5 +1,7 @@
 /* =========================================================
    CHAT WIDGET — FINAL STABLE (guest-safe) + SEND FALLBACK + TIME
+   + ASSISTANT (AUTHED ONLY, CSRF SAFE)
+   + TEST CARD UI (pretty)
    ========================================================= */
 
 (() => {
@@ -19,6 +21,7 @@
     bootstrap: root.dataset.bootstrapUrl || "/chat/api/bootstrap/",
     messages:  root.dataset.messagesUrl  || "/chat/api/messages/",
     send:      root.dataset.sendUrl      || "/chat/api/send/",
+    assistant: root.dataset.assistantUrl || "/assistant/ask/",
   };
 
   const POLL_TIMEOUT = 20;
@@ -124,7 +127,7 @@
           <span class="chat-msg__author">${esc(m.author)}</span>
           ${timeStr ? `<span class="chat-msg__time" style="font-size:10px; font-weight:600; opacity:.6;">${esc(timeStr)}</span>` : ""}
         </div>
-        <div class="chat-msg__text">${esc(m.text).replace(/\n/g, "<br>")}</div>
+        <div class="chat-msg__text">${esc(m.text).replace(/\\n/g, "<br>")}</div>
       </div>
     `;
 
@@ -134,6 +137,103 @@
 
   const system = (text, lvl = "info") =>
     renderMessage({ text, sender: "system", author: "Система" }, lvl);
+
+  /* =========================
+     Assistant (authed only)
+     ========================= */
+
+  async function askAssistant(q) {
+    const r = await fetch(API.assistant, {
+      method: "POST",
+      credentials: "same-origin",
+      headers: {
+        "Content-Type": "application/json",
+        ...csrfHeader(),
+      },
+      body: JSON.stringify({ q, limit: 6 }),
+    });
+    if (!r.ok) return null;
+    return r.json();
+  }
+
+  function shouldAskAssistant(text) {
+    const q = (text || "").trim();
+    if (q.length < 3) return false;
+    if (/^(привет|спасибо|ок|hi|hello)$/i.test(q)) return false;
+    return true;
+  }
+
+  // --- Pretty card for tests (kind=test)
+  function renderTestCard(r) {
+    const code = r?.meta?.code || "";
+    const hint = r?.meta?.hint || "";
+
+    return `
+      <a class="assistant-card test-card" href="${esc(r.url)}" target="_blank" rel="noopener noreferrer">
+        <div class="test-card__header">
+          <div class="test-card__title">${esc(r.title)}</div>
+          ${code ? `<div class="test-card__code">${esc(code)}</div>` : ""}
+        </div>
+
+        ${hint ? `
+          <div class="test-card__subtitle">
+            ${esc(hint)}
+          </div>
+        ` : ""}
+
+        <div class="test-card__divider"></div>
+
+        <div class="test-card__actions">
+          <span class="test-card__action">🥣 Подготовка</span>
+          <span class="test-card__action">⏱ Срок</span>
+          <span class="test-card__action">📊 Нормы</span>
+        </div>
+      </a>
+    `;
+  }
+
+  // --- Default card for all other kinds
+  function renderDefaultCard(r) {
+    return `
+      <a class="assistant-card" href="${esc(r.url)}" target="_blank" rel="noopener noreferrer">
+        <div class="assistant-card__title">${esc(r.title)}</div>
+        ${r.snippet ? `<div class="assistant-card__snippet">${esc(r.snippet)}</div>` : ""}
+        <div class="assistant-card__meta">${esc(r.kind || "")}</div>
+      </a>
+    `;
+  }
+
+  function renderAssistantResults(data) {
+    const results = (data?.results || []).slice(0, 6);
+    if (!results.length) return;
+
+    const el = document.createElement("div");
+    el.className = "chat-msg chat-msg--system chat-msg--info assistant-msg";
+
+    const now = fmtTime(new Date());
+
+    const cards = results.map(r => {
+      // NOTE: backend should send kind normalized to "test" for test items
+      if ((r.kind || "").toString().toLowerCase() === "test") {
+        return renderTestCard(r);
+      }
+      return renderDefaultCard(r);
+    }).join("");
+
+    el.innerHTML = `
+      <div class="chat-msg__bubble">
+        <div class="chat-msg__meta" style="display:flex; align-items:baseline; justify-content:space-between; gap:10px;">
+          <span class="chat-msg__author">Навигатор</span>
+          ${now ? `<span class="chat-msg__time" style="font-size:10px; font-weight:600; opacity:.6;">${esc(now)}</span>` : ""}
+        </div>
+        <div class="chat-msg__text">Подборка по запросу: <b>${esc(data?.query || "")}</b></div>
+        <div class="assistant-cards">${cards}</div>
+      </div>
+    `;
+
+    messages.appendChild(el);
+    scrollBottom();
+  }
 
   async function bootstrapChat() {
     const r = await fetch(API.bootstrap, { credentials: "same-origin", cache: "no-store" });
@@ -285,6 +385,13 @@
         location.href = "/accounts/login/";
       }
       return;
+    }
+
+    // Ассистент — только для авторизованных (CSRF-safe)
+    if (shouldAskAssistant(text)) {
+      askAssistant(text)
+        .then(d => { if (d) renderAssistantResults(d); })
+        .catch(() => {});
     }
 
     input.value = "";

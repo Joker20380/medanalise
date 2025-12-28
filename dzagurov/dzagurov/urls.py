@@ -28,6 +28,8 @@ urlpatterns = [
     path('', include('main.urls')),
     path("chat/", include(("chat.urls", "chat"), namespace="chat")),
     path('accounts/', include('allauth.urls')),
+    path("assistant/", include("assistant.urls")),
+
 
 ]
 

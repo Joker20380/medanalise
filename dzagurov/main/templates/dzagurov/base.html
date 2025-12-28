@@ -87,7 +87,7 @@
       <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
           <div class="modal-header">
-            
+
             <button type="button" class="close" data-dismiss="modal" aria-label="Закрыть">
               <span aria-hidden="true">&times;</span>
             </button>
@@ -107,7 +107,7 @@
       <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
           <div class="modal-header">
-           
+
             <button type="button" class="close" data-dismiss="modal" aria-label="Закрыть">
               <span aria-hidden="true">&times;</span>
             </button>
@@ -205,6 +205,76 @@
         </button>
 
         <div class="collapse navbar-collapse" id="ftco-nav">
+
+          <!-- GNOME / Ubuntu-like Quick Settings (mobile only) -->
+          <div class="qs-panel d-lg-none" aria-label="Quick settings">
+            <div class="qs-header">
+              <div class="qs-title">Быстрые действия</div>
+
+              <!-- account icon + dropdown -->
+              <div class="dropdown qs-account">
+                <button class="qs-iconbtn dropdown-toggle"
+                        type="button"
+                        id="qsAccountMenu"
+                        data-toggle="dropdown"
+                        aria-haspopup="true"
+                        aria-expanded="false"
+                        aria-label="Аккаунт">
+                  <i class="icon-user"></i>
+                </button>
+
+                <div class="dropdown-menu dropdown-menu-right qs-dropdown" aria-labelledby="qsAccountMenu">
+                  {% if request.user.is_authenticated %}
+                    <span class="dropdown-item-text qs-user">{{ user.username }}</span>
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item"
+                       href="{% url 'account_logout' %}"
+                       data-auth-modal="logout">Выйти</a>
+                  {% else %}
+                    <a class="dropdown-item"
+                       href="#"
+                       data-toggle="modal"
+                       data-target="#signupChoiceModal">Регистрация</a>
+
+                    <a class="dropdown-item"
+                       href="{% url 'account_login' %}"
+                       data-auth-modal="login">Войти</a>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+
+            <div class="qs-grid">
+
+              <!-- Office tile -->
+              <div class="qs-tile qs-tile--wide">
+                <div class="qs-tile-top">
+                  <i class="icon-map-marker qs-ico"></i>
+                  <div class="qs-tile-title">Офис</div>
+                </div>
+
+                <select id="officeSwitcherMobile" class="qs-select">
+                  {% for o in offices_for_switcher %}
+                    <option value="{{ o.id }}" {% if o.id == current_office.id %}selected{% endif %}>
+                      {% if o.is_main %}★ {% endif %}{{ o.name }}
+                    </option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <!-- Call tile -->
+              <a class="qs-tile" id="qs-phone-link"
+                 href="tel:{{ current_office.phone|default:'+79180000000' }}">
+                <div class="qs-tile-top">
+                  <i class="icon-phone2 qs-ico"></i>
+                  <div class="qs-tile-title">Позвонить</div>
+                </div>
+                <div class="qs-tile-sub" id="qs-phone-text">{{ current_office.phone|default:'+7(918)000-00-00' }}</div>
+              </a>
+
+            </div>
+          </div>
+
           <ul class="navbar-nav nav ml-auto">
             <li class="nav-item"><a href="{% url 'index' %}" class="nav-link"><span>Домой</span></a></li>
             <li class="nav-item"><a href="{% url 'analysis' %}" class="nav-link"><span>Анализы</span></a></li>
@@ -212,7 +282,7 @@
             <li class="nav-item"><a href="{% url 'doctors' %}" class="nav-link"><span>Доктора</span></a></li>
             <li class="nav-item"><a href="{% url 'blog' %}" class="nav-link"><span>Блог</span></a></li>
             <li class="nav-item"><a href="{% url 'contacts' %}" class="nav-link"><span>Контакты</span></a></li>
-            <li class="nav-item cta mr-md-2"><a href="#" class="nav-link">Запись на прием</a></li>
+            <li class="nav-item cta mr-md-2"><a href="#" class="nav-link">Результаты анализов</a></li>
           </ul>
         </div>
       </div>
@@ -327,7 +397,7 @@
     <script src="{% static 'js/scrollax.min.js' %}"></script>
     <script src="{% static 'js/main.js' %}"></script>
 
-    <!-- Office switcher script -->
+    <!-- Office switcher script (FULL, synced desktop + mobile + qs phone) -->
     <script>
       (function() {
         const urlTemplate = "{% url 'contact_summary' 0 %}";
@@ -335,12 +405,6 @@
         function summaryUrl(id) {
           return urlTemplate.replace("/0/", `/${id}/`);
         }
-
-        const select    = document.getElementById('officeSwitcher');
-        const phoneText = document.getElementById('topbar-phone-text');
-        const phoneLink = document.getElementById('topbar-phone-link');
-        const emailText = document.getElementById('topbar-email-text');
-        const emailLink = document.getElementById('topbar-email-link');
 
         function setCookie(name, value, days) {
           const d = new Date();
@@ -352,8 +416,19 @@
           return 'tel:' + (str || '').replace(/[^\d+]/g,'');
         }
 
-        select && select.addEventListener('change', async function() {
-          const id = this.value;
+        // --- DESKTOP elements
+        const selectDesktop = document.getElementById('officeSwitcher');
+        const phoneText = document.getElementById('topbar-phone-text');
+        const phoneLink = document.getElementById('topbar-phone-link');
+        const emailText = document.getElementById('topbar-email-text');
+        const emailLink = document.getElementById('topbar-email-link');
+
+        // --- MOBILE elements (quick settings)
+        const selectMobile = document.getElementById('officeSwitcherMobile');
+        const mPhoneText = document.getElementById('qs-phone-text');
+        const mPhoneLink = document.getElementById('qs-phone-link');
+
+        async function applyOffice(id) {
           try {
             const resp = await fetch(summaryUrl(id), { headers: {'X-Requested-With':'XMLHttpRequest'} });
             if (!resp.ok) throw new Error('HTTP ' + resp.status);
@@ -362,27 +437,55 @@
             const phone = (data.phone || '').trim();
             const email = (data.email || '').trim();
 
-            if (phone) {
-              phoneText.textContent = phone;
-              phoneLink.setAttribute('href', telHref(phone));
-            } else {
-              phoneText.textContent = '+7(918)000-00-00';
-              phoneLink.setAttribute('href', 'tel:+79180000000');
+            // DESKTOP phone
+            if (phoneText && phoneLink) {
+              if (phone) {
+                phoneText.textContent = phone;
+                phoneLink.setAttribute('href', telHref(phone));
+              } else {
+                phoneText.textContent = '+7(918)000-00-00';
+                phoneLink.setAttribute('href', 'tel:+79180000000');
+              }
             }
 
-            if (email) {
-              emailText.textContent = email;
-              emailLink.setAttribute('href', 'mailto:' + email);
-            } else {
-              emailText.textContent = 'youremail@email.ru';
-              emailLink.setAttribute('href', 'mailto:youremail@email.ru');
+            // DESKTOP email
+            if (emailText && emailLink) {
+              if (email) {
+                emailText.textContent = email;
+                emailLink.setAttribute('href', 'mailto:' + email);
+              } else {
+                emailText.textContent = 'youremail@email.ru';
+                emailLink.setAttribute('href', 'mailto:youremail@email.ru');
+              }
             }
+
+            // MOBILE quick settings phone
+            if (mPhoneText && mPhoneLink) {
+              mPhoneText.textContent = phone || '+7(918)000-00-00';
+              mPhoneLink.setAttribute('href', phone ? telHref(phone) : 'tel:+79180000000');
+            }
+
+            // sync selects
+            if (selectDesktop && selectDesktop.value !== String(id)) selectDesktop.value = String(id);
+            if (selectMobile && selectMobile.value !== String(id)) selectMobile.value = String(id);
 
             setCookie('office_id', id, 365);
           } catch (e) {
             console.warn('Ошибка при обновлении офиса', e);
           }
-        });
+        }
+
+        if (selectDesktop) {
+          selectDesktop.addEventListener('change', function() {
+            applyOffice(this.value);
+          });
+        }
+
+        if (selectMobile) {
+          selectMobile.addEventListener('change', function() {
+            applyOffice(this.value);
+          });
+        }
       })();
     </script>
 
@@ -440,7 +543,6 @@
         </div>
       </div>
 
-      <!-- chat widget JS -->
       <script src="{% static 'js/chat_widget.js' %}"></script>
     </div>
 

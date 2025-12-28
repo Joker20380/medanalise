@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'users',
     'chat',
     'lab',
+    'assistant',
     'channels',
     'import_export',
     'phonenumber_field',
@@ -69,6 +70,7 @@ INSTALLED_APPS = [
     'dal_select2',
     'django_select2',
     'widget_tweaks',
+    'axes',
     
 ]
 
@@ -82,6 +84,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'allauth.account.middleware.AccountMiddleware',
+    "axes.middleware.AxesMiddleware",
 
 ]
 
@@ -109,6 +112,12 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'dzagurov.wsgi.application'
+
+
+AUTHENTICATION_BACKENDS = [
+    "axes.backends.AxesBackend",
+    "django.contrib.auth.backends.ModelBackend",
+]
 
 
 # Database
@@ -207,6 +216,19 @@ NACPP_RETRY_BACKOFF = 1.5  # экспоненциально
 
 
 
+# Баланс удобство/защита
+AXES_ENABLED = True
+AXES_FAILURE_LIMIT = 7                 # 7 промахов
+AXES_COOLOFF_TIME = 1                  # блок на 1 час
+AXES_LOCKOUT_CALLABLE = None           # стандартный lockout
+AXES_RESET_ON_SUCCESS = True           # успешный вход сбрасывает счётчик
+
+# Что считаем "ключом" атаки
+AXES_ONLY_USER_FAILURES = False        # учитываем и IP
+AXES_LOCK_OUT_BY_COMBINATION_USER_AND_IP = True
+AXES_VERBOSE = True
+
+
 
 # Телеграм
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
@@ -238,6 +260,25 @@ VK_API_VERSION = "5.199"
 
 
 VK_GROUP_ID = 233167697
+
+
+
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+
+SESSION_COOKIE_HTTPONLY = True
+CSRF_COOKIE_HTTPONLY = False  # обычно False, Django читает CSRF cookie через JS редко, но оставим стандарт
+
+SESSION_COOKIE_SAMESITE = "Lax"
+CSRF_COOKIE_SAMESITE = "Lax"
+
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_REFERRER_POLICY = "same-origin"
+
+SECURE_HSTS_SECONDS = 60 * 60 * 24 * 30  # 30 дней (потом можно поднять)
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = False
 
 
 
