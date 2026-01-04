@@ -20,6 +20,7 @@ urlpatterns = [
     			path('unsubscribe/confirm/<str:token>/', Unsubscribe_confirm, name='unsubscribe_confirm'),
     			path("vk-test/", TemplateView.as_view(template_name="vk_test.html")),
     			path('doctors/', Doctors.as_view(), name='doctors'),
+    			path('documents/', Documents.as_view(), name='documents'),
 				path('blog/', Blog.as_view(), name='blog'),
 				path('conf/', Confidential_information.as_view(), name='conf'),
                 path("api/contacts/<int:pk>/summary/", contact_summary, name="contact_summary"),

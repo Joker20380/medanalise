@@ -122,6 +122,18 @@ class Index(TemplateView):
             "hero_contacts": hero_contacts,
         })
         return ctx
+    
+    @staticmethod
+    def news_all():
+        return News.objects.order_by('-time_update')
+
+
+class Documents(ListView):
+    queryset = Documents.objects.order_by('-time_update')
+    model = Documents
+    template_name = 'dzagurov/documents.html'
+    context_object_name = 'doc'
+    paginate_by = 6
 
 
 class Doctors(ListView):

@@ -1,0 +1,31 @@
+<form method="get" action="{% url 'index' %}"
+      class="search-form shadow-sm p-3 bg-white rounded">
+
+  {% if p_cat %}
+    <input type="hidden" name="p_cat" value="{{ p_cat }}">
+  {% endif %}
+
+  <div class="input-group input-group-lg">
+    <input
+      type="text"
+      name="p_q"
+      class="form-control"
+      placeholder="Поиск по коду, названию, категории, анализам…"
+      value="{{ p_q|default:'' }}"
+      aria-label="Поиск"
+    >
+    <div class="input-group-append">
+      <button class="btn btn-primary" type="submit">
+        <span class="icon-search"></span>
+      </button>
+    </div>
+  </div>
+
+  {% if p_q %}
+    <div class="mt-2">
+      <a class="small text-muted" href="{% url 'index' %}{% if p_cat %}?p_cat={{ p_cat }}{% endif %}">
+        Сбросить поиск
+      </a>
+    </div>
+  {% endif %}
+</form>

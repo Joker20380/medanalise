@@ -145,10 +145,10 @@
 
 /* Topbar: стекло (вместо синей заливки) */
 .top.bg-black{
-  background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.06)) !important;
-  border-bottom: 1px solid rgba(255,255,255,.16);
-  backdrop-filter: blur(14px) saturate(140%);
-  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  background: #116cb3 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none;
 }
 
 /* Пусть не режет выпадашки */
@@ -238,8 +238,51 @@
   }
 }
 
+/* ============================================================
+   NAVBAR (DESKTOP) — GLASS (instead of solid blue)
+   Applies to the main menu bar with logo + "Результаты анализов" button
+   ============================================================ */
+
+@media (min-width: 992px){
+  /* Make the main navbar glass */
+  .ftco-navbar-light{
+    background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.06)) !important;
+    border-bottom: 1px solid rgba(255,255,255,.16);
+    box-shadow: 0 10px 30px rgba(0,0,0,.14);
+
+    backdrop-filter: blur(14px) saturate(140%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+
+    transition: background-color .25s ease, box-shadow .25s ease, border-color .25s ease;
+  }
+
+  /* On scroll: slightly stronger glass */
+  .ftco-navbar-light.scrolled{
+    background: linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,.08)) !important;
+    border-bottom-color: rgba(255,255,255,.22);
+    box-shadow: 0 14px 40px rgba(0,0,0,.18);
+  }
+
+  /* Keep nav links readable on glass */
+  .ftco-navbar-light .navbar-nav .nav-link,
+  .ftco-navbar-light .navbar-brand,
+  .ftco-navbar-light .navbar-toggler,
+  .ftco-navbar-light .navbar-toggler .oi{
+    color: rgba(255,255,255,.92) !important;
+  }
+
+  /* Make dropdown menus not clipped by any parents */
+  .ftco-navbar-light,
+  .ftco-navbar-light .container{
+    overflow: visible !important;
+  }
+
+  /* If you use sticky navbar, keep it above content */
+  .ftco-navbar-light{ z-index: 1020; }
+}
+
 /* =========================================================
-   CHAT WIDGET — CORPORATE GLASS (#116cb3)
+   CHAT WIDGET— CORPORATE GLASS (#116cb3)
    ========================================================= */
 
 :root{
@@ -902,250 +945,74 @@ body.modal-open #chat-widget .chat-panel{
 }
 
 
-/* =========================================================
-   BRAND NAV: DESKTOP + MOBILE (BLUE), with mobile logo swap
-   ========================================================= */
+/* ============================================================
+   NAVBAR TEXT COLOR FIX — dark text on glass
+   ============================================================ */
 
-:root{
-  --brand-blue: #116cb3;
-  --brand-blue-2: #0e5f9d;   /* полутон при скролле */
-  --brand-white: rgba(255,255,255,.92);
-}
+@media (min-width: 992px){
+  .ftco-navbar-light .navbar-nav .nav-link,
+  .ftco-navbar-light .navbar-brand{
+    color: #111 !important;
+  }
 
-/* TOP BAR всегда синий */
-.top.bg-black{
-  background: var(--brand-blue) !important;
-}
-
-/* Navbar на всех размерах — синий (тема иногда красит по-своему) */
-.ftco-navbar-light{
-  background: var(--brand-blue) !important;
-  box-shadow: 0 10px 30px rgba(0,0,0,.18);
-  transition: background-color .25s ease, box-shadow .25s ease;
-}
-
-/* При скролле — полутон (main.js добавляет .scrolled) */
-.ftco-navbar-light.scrolled{
-  background: var(--brand-blue-2) !important;
-  box-shadow: 0 14px 40px rgba(0,0,0,.22);
-}
-
-/* Иконки/текст в navbar — белые */
-.ftco-navbar-light .navbar-toggler,
-.ftco-navbar-light .navbar-toggler .oi{
-  color: var(--brand-white) !important;
-}
-
-/* =========================
-   Logo swap
-   ========================= */
-.brand-logo{
-  display: block;
-  height: auto;
-}
-
-/* Desktop: показываем desktop logo */
-.brand-logo--desktop{ display: block; width: 200px; }
-.brand-logo--mobile{ display: none; }
-
-/* Mobile: показываем mobile logo */
-@media (max-width: 991.98px){
-  .brand-logo--desktop{ display: none; }
-  .brand-logo--mobile{
-    display: block;
-    width: 140px;          /* поджато под мобилу */
-    max-width: 60vw;
+  .ftco-navbar-light .navbar-nav .nav-link:hover,
+  .ftco-navbar-light .navbar-nav .nav-link:focus{
+    color: #000 !important;
   }
 }
 
+/* Mobile navbar text */
+.ftco-navbar-light .navbar-nav .nav-link{
+  color: #111 !important;
+}
 
-/* =========================================================
-   GNOME / Ubuntu-like Quick Settings (burger)
-   ========================================================= */
-@media (max-width: 991.98px){
 
-  /* drawer container (если у тебя уже есть — это аккуратно перебьёт) */
-  #ftco-nav.navbar-collapse{
-    margin-top: 10px;
-    padding: 10px;
-    border-radius: 18px;
+.search-form {
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
 
-    max-height: calc(100vh - 92px);
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
+.search-form input {
+  border-right: 0;
+}
 
-    background: linear-gradient(180deg, rgba(8,12,18,.92), rgba(10,16,24,.84));
-    border: 1px solid rgba(255,255,255,.10);
+.search-form .btn {
+  border-left: 0;
+}
 
-    box-shadow: 0 18px 60px rgba(0,0,0,.45);
-  }
+.news-carousel .item {
+  padding-bottom: 5px;
+}
 
-  .qs-panel{
-    padding: 10px 10px 12px;
-    margin-bottom: 10px;
-    border-radius: 16px;
+.news-carousel .blog-entry {
+  height: 100%;
+}
 
-    background: rgba(255,255,255,.06);
-    border: 1px solid rgba(255,255,255,.10);
-    box-shadow: 0 12px 34px rgba(0,0,0,.28);
-  }
+.news-carousel .blog-entry .text {
+  min-height: 220px; /* чтобы не "скакали" по высоте */
+}
 
-  .qs-header{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap: 10px;
-    padding: 2px 2px 10px;
-  }
+/* стрелки */
+.news-carousel .owl-nav button {
+  position: absolute;
+  top: 35%;
+  transform: translateY(-50%);
+}
 
-  .qs-title{
-    color: rgba(255,255,255,.90);
-    font-weight: 800;
-    font-size: 13px;
-    letter-spacing: .02em;
-    text-transform: uppercase;
-    opacity: .9;
-  }
+.news-carousel .owl-nav .owl-prev { left: -45px; }
+.news-carousel .owl-nav .owl-next { right: -45px; }
 
-  .qs-iconbtn{
-    width: 38px;
-    height: 38px;
-    border-radius: 14px;
+@media (max-width: 991px) {
+  .news-carousel .owl-nav .owl-prev { left: -15px; }
+  .news-carousel .owl-nav .owl-next { right: -15px; }
+}
 
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
+/* FIX: не даём теме гасить элементы owl-carousel */
+.news-carousel .owl-item {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
 
-    background: rgba(255,255,255,.08) !important;
-    border: 1px solid rgba(255,255,255,.12) !important;
-    color: rgba(255,255,255,.92) !important;
-
-    box-shadow: 0 10px 26px rgba(0,0,0,.24);
-    padding: 0 !important;
-  }
-  .qs-iconbtn.dropdown-toggle::after{ display:none !important; }
-
-  .qs-dropdown{
-    margin-top: 10px;
-    min-width: 210px;
-
-    background: linear-gradient(180deg, rgba(8,12,18,.92), rgba(10,16,24,.88));
-    border: 1px solid rgba(255,255,255,.12);
-    border-radius: 16px;
-
-    box-shadow: 0 18px 60px rgba(0,0,0,.40);
-    overflow: hidden;
-  }
-  .qs-dropdown .dropdown-item,
-  .qs-dropdown .dropdown-item-text{
-    color: rgba(255,255,255,.92);
-    font-weight: 700;
-    font-size: 14px;
-    padding: .55rem .85rem;
-  }
-  .qs-dropdown .dropdown-item:hover{
-    background: rgba(255,255,255,.08);
-    color:#fff;
-  }
-  .qs-dropdown .dropdown-divider{
-    border-top: 1px solid rgba(255,255,255,.10);
-  }
-  .qs-user{ opacity:.9; }
-
-  /* tiles grid */
-  .qs-grid{
-    display:grid;
-    grid-template-columns: repeat(2, minmax(0,1fr));
-    gap: 10px;
-  }
-
-  .qs-tile{
-    display:block;
-    padding: 12px 12px 10px;
-    border-radius: 16px;
-    text-decoration:none !important;
-
-    background: rgba(255,255,255,.08);
-    border: 1px solid rgba(255,255,255,.10);
-    box-shadow: 0 12px 34px rgba(0,0,0,.24);
-
-    transition: transform .12s ease, box-shadow .12s ease, background-color .12s ease;
-  }
-
-  .qs-tile:hover{
-    background: rgba(255,255,255,.10);
-    box-shadow: 0 16px 44px rgba(0,0,0,.30);
-    transform: translateY(-1px);
-  }
-
-  .qs-tile:active{
-    transform: translateY(1px);
-  }
-
-  .qs-tile--wide{
-    grid-column: 1 / -1;
-  }
-
-  .qs-tile-top{
-    display:flex;
-    align-items:center;
-    gap: 10px;
-    margin-bottom: 8px;
-  }
-
-  .qs-ico{
-    width: 34px;
-    height: 34px;
-    border-radius: 14px;
-
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-
-    background: rgba(255,255,255,.08);
-    border: 1px solid rgba(255,255,255,.12);
-
-    color: rgba(255,255,255,.92);
-    font-size: 16px;
-  }
-
-  .qs-tile-title{
-    color: rgba(255,255,255,.92);
-    font-weight: 800;
-    font-size: 14px;
-    letter-spacing: .01em;
-  }
-
-  .qs-tile-sub{
-    color: rgba(255,255,255,.72);
-    font-size: 12px;
-    font-weight: 650;
-    letter-spacing: .01em;
-  }
-
-  .qs-select{
-    width: 100%;
-    height: 40px;
-    border-radius: 14px;
-    padding: 0 .75rem;
-
-    background: rgba(255,255,255,.08);
-    border: 1px solid rgba(255,255,255,.12);
-    color: #fff;
-
-    font-size: 14px;
-    font-weight: 750;
-
-    box-shadow: 0 10px 28px rgba(0,0,0,.18);
-    outline: none;
-  }
-
-  /* make nav links a bit more compact so everything fits */
-  .ftco-navbar-light .navbar-nav .nav-link{
-    padding: 9px 12px !important;
-    margin: 4px 2px !important;
-    border-radius: 12px;
-    font-size: 14px;
-    line-height: 1.15;
-  }
+/* На всякий случай: и все потомки */
+.news-carousel .owl-item * {
+  opacity: 1 !important;
 }

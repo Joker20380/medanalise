@@ -7,18 +7,15 @@
 {% block content %}
 
   <!-- Hero -->
-  <section class="ftco-intro img" style="background-image: url({% static 'images/contacts.webp' %});">
-        <!-- Content -->
+  <!-- <section class="ftco-intro img" style="background-image: url({% static 'images/contacts.webp' %});">
     <div class="container h-100 d-flex flex-column justify-content-center">
       <div class="row justify-content-center">
         <div class="col-12 col-sm-10 col-md-8 col-lg-7 col-xl-6">
-          <!-- Centered mini-UI card -->
           <div class="hero-card shadow-lg">
             <h2 class="h4 mb-1 text-center">Анализы</h2>
             <p class="text-center text-muted mb-3">Каталог анализов и быстрая запись</p>
 
             <form method="get" action="" class="hero-form">
-              <!-- Поиск -->
               <div class="form-group mb-2">
                 <label for="p_q" class="sr-only">Поиск по названию или коду</label>
                 <div class="input-group">
@@ -33,8 +30,6 @@
                          placeholder="Поиск по названию, коду или аналиту…">
                 </div>
               </div>
-
-              <!-- Категория + Найти -->
               <div class="form-row">
                 <div class="form-group col-12 col-sm-7 mb-2">
                   <label for="p_cat" class="sr-only">Категория</label>
@@ -55,8 +50,6 @@
                   </button>
                 </div>
               </div>
-
-              <!-- Расширенный блок: филиал + дата/время -->
               <div class="card mb-2 border-0">
                 <div class="card-body p-2">
                   <div class="form-row">
@@ -123,7 +116,36 @@
         </div>
       </div>
     </div>
-  </section>
+  </section> -->
+  
+  <!-- Search Hero -->
+<section class="ftco-section ftco-no-pb bg-light">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-10 col-lg-8 ftco-animate">
+        <form method="get" action="" class="search-form shadow-sm p-4 bg-white rounded">
+          <div class="input-group input-group-lg">
+            <input
+              type="text"
+              name="q"
+              class="form-control"
+              placeholder="Поиск анализов, статей, услуг…"
+              value="{{ request.GET.q|default:'' }}"
+              aria-label="Поиск"
+            >
+            <div class="input-group-append">
+              <button class="btn btn-primary" type="submit">
+                <span class="icon-search"></span>
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+
 
   <!-- Django messages -->
   {% if messages %}

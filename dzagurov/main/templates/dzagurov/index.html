@@ -6,30 +6,56 @@
 
 {% block content %}
 
-	  <section class="hero-wrap js-fullheight" style="background-image: url('{% static 'images/index_medanalise.webp' %}');" data-section="home" data-stellar-background-ratio="0.5">
-      <div class="overlay"></div>
-      <div class="container">
-        <div class="row no-gutters slider-text js-fullheight align-items-center justify-content-start" data-scrollax-parent="true">
-          <div class="col-md-6 pt-5 ftco-animate">
-          	<div class="mt-5">
-            	{% if messages %}
-    				<div class="container mt-3">
-    					{% for message in messages %}
-        					<div class="alert alert-{{ message.tags|default:'info' }} mb-3" role="alert">
-        						{{ message }}
-        					</div>
-    					{% endfor %}
-    				</div>
-				{% endif %}
-          		<span class="subheading">Добро пожаловать в КДЛ Дзагуров</span>
-	            <h1 class="mb-4">Мы здесь <br>чтобы помочь Вам</h1>
-	            <p class="mb-4">Far far away, behind the word mountains, far from the countries Vokalia and Consonantia, there live the blind texts. Separated they live in Bookmarksgrove.</p>
-	            <p><a href="#" class="btn btn-primary py-3 px-4">Make an appointment</a></p>
-            </div>
-          </div>
-        </div>
+<section class="ftco-section ftco-no-pb bg-light">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-10 col-lg-8">
+        {% include "includes/search_bar.html" %}
       </div>
-    </section>
+    </div>
+  </div>
+</section>
+
+
+
+	  <!-- Django messages -->
+  {% if messages %}
+    <div class="container mt-3">
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags|default:'info' }} mb-3" role="alert">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+<section class="ftco-section bg-light" id="blog-section">
+	<div class="container">
+		<div class="owl-carousel news-carousel" data-aos="none">
+			{% for n in view.news_all %}
+    		<div class="item">
+    			<div class="blog-entry">
+        		{% if n.photo %}
+        			<a href="blog-single.html" class="block-20" style="background-image:url('{{ n.photo.url }}');"></a>
+        		{% else %}
+        			<a href="blog-single.html" class="block-20" style="background-image:url('{% static 'images/image_1.jpg' %}');"></a>
+        		{% endif %}
+        			<div class="text d-block">
+        				<div class="meta mb-3">
+            			<div><a href="#">{{ n.time_update }}</a></div>
+            			<div><a href="#">Admin</a></div>
+            			<div><a href="#" class="meta-chat"><span class="icon-chat"></span> 3</a></div>
+        			</div>
+        			<h3 class="heading"><a href="#">{{ n.title }}</a></h3>
+        			<p>{% autoescape off %}{{ n.content|truncatewords:10 }}{% endautoescape %}</p>
+        			<p><a href="blog-single.html" class="btn btn-primary py-2 px-3">читать далее</a></p>
+        		</div>
+    			</div>
+    		</div>
+			{% endfor %}
+		</div>
+	</div>
+</section>
 
 		<section class="ftco-counter img ftco-section ftco-no-pt ftco-no-pb" id="about-section">
     	<div class="container">
